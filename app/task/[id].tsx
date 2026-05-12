@@ -47,8 +47,11 @@ export default function TaskDetailsScreen() {
   const [task, setTask] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [logsOpen, setLogsOpen] = useState(false);
   const [optionsModalVisible, setOptionsModalVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  const [aiAdvice, setAiAdvice] = useState<{ advice: string; source: string } | null>(null);
 
   // Helper to determine if task is completed
   const isEffectivelyCompleted = () => {
@@ -77,6 +80,16 @@ export default function TaskDetailsScreen() {
       });
       if (res.ok) {
         setTask(await res.json());
+        
+        // Fetch AI advice
+        try {
+          const adviceRes = await fetch(`${BASE_URL}/ai/get-task-advice/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (adviceRes.ok) {
+            setAiAdvice(await adviceRes.json());
+          }
+        } catch {}
       } else {
         Alert.alert('خطأ', 'تعذر تحميل تفاصيل المهمة');
         router.back();
@@ -112,35 +125,36 @@ export default function TaskDetailsScreen() {
     }
   };
 
-  const confirmDelete = () => {
-    Alert.alert(
-      'حذف المهمة',
-      'هل أنت متأكد أنك تريد حذف هذه المهمة نهائياً؟',
-      [
-        { text: 'إلغاء', style: 'cancel' },
-        { text: 'حذف', style: 'destructive', onPress: deleteTask },
-      ]
-    );
+  const deleteTask = async () => {
+    setConfirmDeleteVisible(true);
   };
 
-  const deleteTask = async () => {
-    setIsLoading(true);
+  const performDelete = async () => {
+    setConfirmDeleteVisible(false);
+    setIsDeleting(true);
+    const token = await getItem('userToken');
+    
+    if (!token) {
+      Alert.alert('خطأ', 'لا يوجد توكن');
+      setIsDeleting(false);
+      return;
+    }
+
     try {
-      const token = await getItem('userToken');
       const res = await fetch(`${BASE_URL}/todo/delete/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
+      
       if (res.ok) {
-        router.replace('/(tabs)?success=todo_deleted');
+        router.replace('/(tabs)');
       } else {
-        Alert.alert('خطأ', 'تعذر حذف المهمة');
+        Alert.alert('خطأ', 'فشل الحذف');
       }
-    } catch {
-      Alert.alert('خطأ', 'مشكلة في الاتصال بالخادم');
-    } finally {
-      setIsLoading(false);
+    } catch (e) {
+      Alert.alert('خطأ', 'مشكلة في الاتصال');
     }
+    setIsDeleting(false);
   };
 
   const showTaskOptions = () => {
@@ -193,6 +207,19 @@ export default function TaskDetailsScreen() {
             <Text style={styles.desc}>{task.description}</Text>
           ) : null}
         </View>
+
+        {/* AI Advice Section */}
+        {aiAdvice && (
+          <View style={styles.adviceCard}>
+            <View style={styles.adviceHeader}>
+              <View style={styles.adviceIconBox}>
+                <Ionicons name="bulb" size={16} color={THEME.brand} />
+              </View>
+              <Text style={styles.adviceTitle}>نصيحة لمهمتك</Text>
+            </View>
+            <Text style={styles.adviceText}>{aiAdvice.advice}</Text>
+          </View>
+        )}
 
         {/* Details Section */}
         <View style={styles.detailsCard}>
@@ -307,13 +334,17 @@ export default function TaskDetailsScreen() {
 
       {/* Options Modal */}
       <Modal visible={optionsModalVisible} transparent animationType="fade" onRequestClose={() => setOptionsModalVisible(false)}>
-        <Pressable style={styles.overlay} onPress={() => setOptionsModalVisible(false)}>
-          <Pressable style={styles.modalBox} onPress={(e: any) => e.stopPropagation()}>
+        <Pressable style={styles.overlay} onPress={() => { console.log('Overlay pressed'); setOptionsModalVisible(false); }}>
+          <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>خيارات المهمة</Text>
             
             <TouchableOpacity 
               style={styles.modalActionBtn} 
-              onPress={() => { setOptionsModalVisible(false); router.push({ pathname: '/edit-todo/[id]', params: { id: id as string } } as any); }}
+              onPress={() => { 
+                console.log('Edit pressed');
+                setOptionsModalVisible(false); 
+                router.push({ pathname: '/edit-todo/[id]', params: { id: id as string } } as any); 
+              }}
             >
               <Ionicons name="pencil" size={20} color={THEME.brand} />
               <Text style={styles.modalActionText}>تعديل المهمة</Text>
@@ -323,12 +354,46 @@ export default function TaskDetailsScreen() {
             
             <TouchableOpacity 
               style={styles.modalActionBtn} 
-              onPress={() => { setOptionsModalVisible(false); confirmDelete(); }}
+              onPress={() => { 
+                console.log('Delete pressed in modal');
+                setOptionsModalVisible(false); 
+                deleteTask(); 
+              }}
             >
               <Ionicons name="trash" size={20} color="#FF5252" />
               <Text style={[styles.modalActionText, { color: '#FF5252' }]}>حذف المهمة</Text>
             </TouchableOpacity>
-          </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal visible={confirmDeleteVisible} transparent animationType="fade" onRequestClose={() => setConfirmDeleteVisible(false)}>
+        <Pressable style={styles.overlay} onPress={() => setConfirmDeleteVisible(false)}>
+          <View style={styles.confirmModalBox}>
+            <View style={styles.confirmIconCircle}>
+              <Ionicons name="warning" size={40} color="#FF5252" />
+            </View>
+            <Text style={styles.confirmTitle}>حذف المهمة</Text>
+            <Text style={styles.confirmMessage}>
+              هل أنت متأكد من حذف هذه المهمة نهائياً؟ لا يمكن التراجع عن هذا الإجراء.
+            </Text>
+            <View style={styles.confirmButtons}>
+              <TouchableOpacity 
+                style={styles.cancelBtn} 
+                onPress={() => setConfirmDeleteVisible(false)}
+              >
+                <Text style={styles.cancelBtnText}>إلغاء</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.deleteBtn} 
+                onPress={performDelete}
+              >
+                <Ionicons name="trash-outline" size={18} color="#FFF" />
+                <Text style={styles.deleteBtnText}>حذف</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </Pressable>
       </Modal>
 
@@ -363,6 +428,43 @@ const styles = StyleSheet.create({
   statusText: { fontFamily: Typography.fonts.bold, fontSize: 13 },
   title: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 22, marginBottom: 8, textAlign: 'right' },
   desc: { color: THEME.secondaryText, fontFamily: Typography.fonts.regular, fontSize: 15, lineHeight: 22, textAlign: 'right' },
+
+  adviceCard: {
+    backgroundColor: 'rgba(216,67,21,0.08)',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(216,67,21,0.2)',
+  },
+  adviceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 12,
+  },
+  adviceIconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    backgroundColor: 'rgba(216,67,21,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  adviceTitle: {
+    color: THEME.brand,
+    fontFamily: Typography.fonts.bold,
+    fontSize: 15,
+    textAlign: 'right',
+  },
+  adviceText: {
+    color: THEME.text,
+    fontFamily: Typography.fonts.regular,
+    fontSize: 14,
+    lineHeight: 24,
+    textAlign: 'right',
+    opacity: 0.9,
+  },
 
   detailsCard: {
     backgroundColor: THEME.card,
@@ -441,4 +543,65 @@ const styles = StyleSheet.create({
   modalActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, justifyContent: 'flex-start' },
   modalActionText: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 16 },
   modalDivider: { height: 1, backgroundColor: THEME.divider, marginVertical: 4 },
+
+  confirmModalBox: {
+    width: '85%',
+    backgroundColor: THEME.card,
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: THEME.divider,
+  },
+  confirmIconCircle: {
+    width: 72, height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(255,82,82,0.15)',
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: 16,
+  },
+  confirmTitle: {
+    color: THEME.text,
+    fontSize: 20,
+    fontFamily: Typography.fonts.bold,
+    marginBottom: 8,
+  },
+  confirmMessage: {
+    color: THEME.secondaryText,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  confirmButtons: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: THEME.muted,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  cancelBtnText: {
+    color: THEME.text,
+    fontSize: 15,
+    fontFamily: Typography.fonts.bold,
+  },
+  deleteBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: '#FF5252',
+    flexDirection: 'row',
+    justifyContent: 'center', alignItems: 'center',
+    gap: 8,
+  },
+  deleteBtnText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontFamily: Typography.fonts.bold,
+  },
 });
