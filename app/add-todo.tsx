@@ -53,6 +53,8 @@ export default function AddTodoScreen() {
   const [isSaving, setIsSaving]         = useState(false);
   const [fieldErrors, setFieldErrors]   = useState<FieldErrors>({});
   const [successMsg, setSuccessMsg]     = useState('');
+  const [adviceModal, setAdviceModal]    = useState(false);
+  const [aiAdvice, setAiAdvice]          = useState<{ advice: string; source: string } | null>(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -132,6 +134,23 @@ export default function AddTodoScreen() {
       });
 
       if (res.ok) {
+        const todoData = await res.json();
+        const todoId = todoData.todoId;
+        
+        // Fetch AI advice
+        try {
+          const token = await getItem('userToken');
+          const adviceRes = await fetch(`${BASE_URL}/ai/get-task-advice/${todoId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (adviceRes.ok) {
+            const adviceData = await adviceRes.json();
+            setAiAdvice(adviceData);
+            setAdviceModal(true);
+            return; // Don't navigate yet, show advice first
+          }
+        } catch {}
+        
         router.replace('/(tabs)?success=todo_added');
       } else {
         const errBody = await res.json();
@@ -311,6 +330,30 @@ export default function AddTodoScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* AI Advice Modal */}
+      <Modal visible={adviceModal} transparent animationType="fade" onRequestClose={() => { setAdviceModal(false); router.replace('/(tabs)?success=todo_added'); }}>
+        <Pressable style={styles.overlay} onPress={() => { setAdviceModal(false); router.replace('/(tabs)?success=todo_added'); }}>
+          <View style={styles.adviceModalBox}>
+            <View style={styles.adviceIconCircle}>
+              <Ionicons name="sparkles" size={32} color="#D84315" />
+            </View>
+            <Text style={styles.adviceTitle}>نصيحة لمهمتك</Text>
+            {aiAdvice && (
+              <>
+                <Text style={styles.adviceText}>{aiAdvice.advice}</Text>
+                <Text style={styles.adviceSource}>المصدر: {aiAdvice.source === 'cache' ? 'ذاكرة مؤقتة' : aiAdvice.source}</Text>
+              </>
+            )}
+            <TouchableOpacity 
+              style={styles.adviceBtn} 
+              onPress={() => { setAdviceModal(false); router.replace('/(tabs)?success=todo_added'); }}
+            >
+              <Text style={styles.adviceBtnText}>ممتاز، فهمت</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
+
       {/* Modal تصنيف جديد */}
       <Modal visible={catModal} transparent animationType="fade" onRequestClose={() => setCatModal(false)}>
         <Pressable style={styles.overlay} onPress={() => setCatModal(false)}>
@@ -427,4 +470,51 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: 'row', gap: 12 },
   modalBtn: { flex: 1, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   modalBtnText: { color: '#FFF', fontFamily: Typography.fonts.bold, fontSize: 15 },
+
+  adviceModalBox: {
+    width: '85%',
+    backgroundColor: THEME.secondaryBackground,
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(216,67,21,0.3)',
+  },
+  adviceIconCircle: {
+    width: 64, height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(216,67,21,0.15)',
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: 16,
+  },
+  adviceTitle: {
+    color: THEME.text,
+    fontSize: 18,
+    fontFamily: Typography.fonts.bold,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  adviceText: {
+    color: THEME.text,
+    fontSize: 15,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  adviceSource: {
+    color: THEME.secondaryText,
+    fontSize: 12,
+    marginBottom: 20,
+  },
+  adviceBtn: {
+    backgroundColor: THEME.brand,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  adviceBtnText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontFamily: Typography.fonts.bold,
+  },
 });
