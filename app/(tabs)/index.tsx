@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 22,
     backgroundColor: THEME.chipBg,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.05)',
@@ -323,6 +323,11 @@ const styles = StyleSheet.create({
   filterChipActive: {
     backgroundColor: THEME.brand,
     borderColor: THEME.brand,
+    shadowColor: THEME.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   filterChipText: {
     color: THEME.secondaryText,
@@ -358,16 +363,21 @@ const styles = StyleSheet.create({
 
   // Card
   card: {
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)', // Very faint border
+    borderColor: 'rgba(255,255,255,0.06)',
     gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
   cardDone: {
-    borderColor: 'rgba(216,67,21,0.4)', // Honey (brand) color border
-    backgroundColor: 'rgba(216,67,21,0.03)', // Very faint honey background
+    borderColor: 'rgba(216,67,21,0.3)',
+    backgroundColor: 'rgba(216,67,21,0.03)',
   },
 
   // Card header row
@@ -482,11 +492,13 @@ const styles = StyleSheet.create({
     color: THEME.secondaryText,
     fontFamily: Typography.fonts.bold,
     fontSize: 18,
+    marginTop: 16,
   },
   emptySubtitle: {
     color: '#555',
     fontFamily: Typography.fonts.regular,
     fontSize: 14,
+    marginTop: 8,
   },
   errorText: {
     color: THEME.secondaryText,
@@ -508,13 +520,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 26,
     right: 24,
-    width: 62, height: 62, borderRadius: 31,
+    width: 60, height: 60, borderRadius: 30,
     backgroundColor: THEME.brand,
     justifyContent: 'center', alignItems: 'center',
     elevation: 8,
     shadowColor: THEME.brand,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.45,
-    shadowRadius: 10,
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
   },
 });

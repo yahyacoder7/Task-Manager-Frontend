@@ -187,7 +187,7 @@ export default function LoginScreen() {
                   >
                     البريد الإلكتروني
                   </Text>
-                  <View
+<View
                     style={[
                       styles.inputWrapper,
                       {
@@ -195,6 +195,10 @@ export default function LoginScreen() {
                           focusedInput === "email"
                             ? "rgba(255, 255, 255, 0.15)"
                             : theme.secondaryBackground,
+                        borderColor:
+                          focusedInput === "email"
+                            ? theme.brand
+                            : "transparent",
                       },
                     ]}
                   >
@@ -202,11 +206,20 @@ export default function LoginScreen() {
                       name="mail-outline"
                       size={20}
                       color={
-                        focusedInput === "email"
-                          ? theme.brand
-                          : theme.secondaryText
+                        focusedInput === "email" ? theme.brand : theme.secondaryText
                       }
                       style={styles.inputIcon}
+                    />
+                    <TextInput
+                      style={[styles.input, { color: theme.text }] as any}
+                      placeholder="اسم_المستخدم@taskflow.dev"
+                      placeholderTextColor={theme.secondaryText}
+                      value={email}
+                      onChangeText={setEmail}
+                      onFocus={() => setFocusedInput("email")}
+                      onBlur={() => setFocusedInput(null)}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
                     />
                     <TextInput
                       style={[styles.input, { color: theme.text }] as any}
@@ -244,6 +257,10 @@ export default function LoginScreen() {
                           focusedInput === "password"
                             ? "rgba(255, 255, 255, 0.15)"
                             : theme.secondaryBackground,
+                        borderColor:
+                          focusedInput === "password"
+                            ? theme.brand
+                            : "transparent",
                       },
                     ]}
                   >
@@ -289,15 +306,18 @@ export default function LoginScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  activeOpacity={0.8}
+                  activeOpacity={0.85}
                   style={[styles.loginButton, { backgroundColor: theme.brand }]}
                   onPress={handleLogin}
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <ActivityIndicator color="#FFFFFF" />
+                    <ActivityIndicator color="#FFFFFF" size="small" />
                   ) : (
-                    <Text style={styles.loginButtonText}>تسجيل الدخول</Text>
+                    <>
+                      <Ionicons name="log-in-outline" size={20} color="#FFFFFF" />
+                      <Text style={styles.loginButtonText}>تسجيل الدخول</Text>
+                    </>
                   )}
                 </TouchableOpacity>
 
@@ -329,12 +349,13 @@ export default function LoginScreen() {
 
                 <View style={styles.socialButtons}>
                   <TouchableOpacity
+                    activeOpacity={0.8}
                     style={[
                       styles.socialButton,
                       { backgroundColor: theme.secondaryBackground },
                     ]}
                   >
-                    <Ionicons name="logo-google" size={24} color="#EA4335" />
+                    <Ionicons name="logo-google" size={22} color="#EA4335" />
                   </TouchableOpacity>
                 </View>
 
@@ -425,7 +446,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 16,
     paddingHorizontal: 16,
-    height: 60,
+    height: 58,
+    borderWidth: 1.5,
+    borderColor: "transparent",
   },
   inputIcon: {
     marginLeft: 12,
@@ -455,16 +478,23 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   loginButton: {
-    height: 60,
+    height: 58,
     borderRadius: 16,
+    flexDirection: 'row',
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 32,
+    gap: 10,
+    shadowColor: Colors.dark.brand,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   loginButtonText: {
     color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "800",
+    fontSize: 17,
+    fontWeight: "700",
   },
   dividerContainer: {
     flexDirection: "row",

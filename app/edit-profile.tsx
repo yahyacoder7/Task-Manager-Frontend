@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { getItem, saveItem } from '../utils/storage';
@@ -20,7 +20,30 @@ export default function EditProfileScreen() {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    loadThemePreference();
+  }, []);
+
+  const loadThemePreference = async () => {
+    const savedTheme = await getItem('appTheme');
+    if (savedTheme !== null) {
+      setIsDarkMode(savedTheme === 'dark');
+    }
+  };
+
+  const toggleTheme = async () => {
+    const newTheme = isDarkMode ? 'light' : 'dark';
+    setIsDarkMode(!isDarkMode);
+    await saveItem('appTheme', newTheme);
+    Alert.alert(
+      'تم تغيير السمة',
+      newTheme === 'dark' ? 'تم تطبيق السمة الداكنة' : 'تم تطبيق السمة الفاتحة',
+      [{ text: 'حسناً' }]
+    );
+  };
 
   useEffect(() => {
     loadCurrentName();
@@ -74,25 +97,47 @@ export default function EditProfileScreen() {
         headerStyle: { backgroundColor: THEME.background },
         headerShadowVisible: false,
         headerRight: () => ( 
-          <TouchableOpacity 
-            onPress={() => router.back()} 
-            style={{ 
-              flexDirection: 'row', 
-              alignItems: 'center', 
-              marginRight: 10,
-              gap: 12
-            }}
-          >
-            <Text style={{ 
-              color: THEME.text, 
-              fontSize: 18, 
-              fontWeight: 'bold',
-              fontFamily: Typography.fonts.bold
-            }}>
-              تعديل الملف الشخصي
-            </Text>
-            <Ionicons name="arrow-forward" size={24} color={THEME.text} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, gap: 12 }}>
+            <TouchableOpacity 
+              onPress={toggleTheme} 
+              style={{ 
+                flexDirection: 'row', 
+                alignItems: 'center',
+                backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 20,
+                gap: 8
+              }}
+            >
+              <Ionicons 
+                name={isDarkMode ? 'moon' : 'sunny'} 
+                size={20} 
+                color={isDarkMode ? '#FFD700' : '#FF8C00'} 
+              />
+              <Text style={{ 
+                color: THEME.text, 
+                fontSize: 13, 
+                fontFamily: Typography.fonts.medium
+              }}>
+                {isDarkMode ? 'داكن' : 'فاتح'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => router.back()} 
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+            >
+              <Text style={{ 
+                color: THEME.text, 
+                fontSize: 16, 
+                fontWeight: 'bold',
+                fontFamily: Typography.fonts.bold
+              }}>
+                تعديل الملف الشخصي
+              </Text>
+              <Ionicons name="arrow-forward" size={22} color={THEME.text} />
+            </TouchableOpacity>
+          </View>
         ),
         headerLeft: () => null,
       }} />

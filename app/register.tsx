@@ -132,6 +132,8 @@ export default function RegisterScreen() {
                       focusedInput === "name"
                         ? "rgba(255, 255, 255, 0.15)"
                         : theme.secondaryBackground,
+                    borderColor:
+                      focusedInput === "name" ? theme.brand : "transparent",
                   },
                 ]}
               >
@@ -178,6 +180,8 @@ export default function RegisterScreen() {
                       focusedInput === "email"
                         ? "rgba(255, 255, 255, 0.15)"
                         : theme.secondaryBackground,
+                    borderColor:
+                      focusedInput === "email" ? theme.brand : "transparent",
                   },
                 ]}
               >
@@ -226,6 +230,10 @@ export default function RegisterScreen() {
                       focusedInput === "password"
                         ? "rgba(255, 255, 255, 0.15)"
                         : theme.secondaryBackground,
+                    borderColor:
+                      focusedInput === "password"
+                        ? theme.brand
+                        : "transparent",
                   },
                 ]}
               >
@@ -263,7 +271,7 @@ export default function RegisterScreen() {
             </View>
 
             <TouchableOpacity
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               style={[
                 styles.loginButton,
                 { backgroundColor: theme.brand, marginTop: 20 },
@@ -272,9 +280,12 @@ export default function RegisterScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <Text style={styles.loginButtonText}>إنشاء حساب جديد</Text>
+                <>
+                  <Ionicons name="person-add-outline" size={20} color="#FFFFFF" />
+                  <Text style={styles.loginButtonText}>إنشاء حساب جديد</Text>
+                </>
               )}
             </TouchableOpacity>
 
@@ -394,7 +405,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 16,
     paddingHorizontal: 16,
-    height: 60,
+    height: 58,
+    borderWidth: 1.5,
+    borderColor: "transparent",
   },
   inputIcon: {
     marginLeft: 12,
@@ -410,16 +423,23 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   loginButton: {
-    height: 60,
+    height: 58,
     borderRadius: 16,
+    flexDirection: 'row',
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 32,
+    gap: 10,
+    shadowColor: Colors.dark.brand,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   loginButtonText: {
     color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "800",
+    fontSize: 17,
+    fontWeight: "700",
   },
   dividerContainer: {
     flexDirection: "row",

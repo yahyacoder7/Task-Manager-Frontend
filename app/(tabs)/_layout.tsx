@@ -57,10 +57,13 @@ export default function TabLayout() {
         },
         headerStyle: {
           backgroundColor: THEME.secondaryBackground,
-          elevation: 0,
-          shadowOpacity: 0,
+          elevation: 4,
+          shadowColor: 'rgba(216, 67, 21, 0.15)',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 6,
           borderBottomWidth: 1,
-          borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+          borderBottomColor: 'rgba(255, 255, 255, 0.08)',
         },
         // Title is null globally; each screen sets it via headerRight
         headerTitle: () => null,

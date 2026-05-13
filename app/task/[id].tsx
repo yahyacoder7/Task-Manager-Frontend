@@ -211,7 +211,7 @@ export default function TaskDetailsScreen() {
         {/* AI Advice Section */}
         {aiAdvice && (
           <View style={styles.adviceCard}>
-            <View style={styles.adviceHeader}>
+            <View style={styles.adviceRow}>
               <View style={styles.adviceIconBox}>
                 <Ionicons name="bulb" size={16} color={THEME.brand} />
               </View>
@@ -412,16 +412,21 @@ const styles = StyleSheet.create({
 
   mainCard: {
     backgroundColor: THEME.card,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 22,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: THEME.divider,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   statusBadge: {
     flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start',
-    gap: 6, paddingHorizontal: 10, paddingVertical: 4,
-    backgroundColor: 'rgba(216,67,21,0.1)', borderRadius: 8,
+    gap: 6, paddingHorizontal: 12, paddingVertical: 6,
+    backgroundColor: 'rgba(216,67,21,0.1)', borderRadius: 10,
     marginBottom: 16,
   },
   statusBadgeDone: { backgroundColor: 'rgba(216,67,21,0.05)' },
@@ -437,8 +442,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(216,67,21,0.2)',
   },
-  adviceHeader: {
-    flexDirection: 'row',
+  adviceRow: {
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 10,
     marginBottom: 12,
@@ -524,11 +529,16 @@ const styles = StyleSheet.create({
   completeBtn: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10,
     backgroundColor: THEME.brand,
-    height: 54, borderRadius: 14,
+    height: 56, borderRadius: 16,
+    shadowColor: THEME.brand,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
   },
   completeBtnDone: {
-    backgroundColor: 'rgba(216,67,21,0.05)',
-    borderWidth: 1, borderColor: THEME.brand,
+    backgroundColor: 'rgba(216,67,21,0.08)',
+    borderWidth: 1.5, borderColor: THEME.brand,
   },
   completeBtnText: {
     color: '#FFF', fontFamily: Typography.fonts.bold, fontSize: 16,

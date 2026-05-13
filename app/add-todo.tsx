@@ -458,6 +458,11 @@ const styles = StyleSheet.create({
   saveBtn: {
     backgroundColor: THEME.brand, height: 56, borderRadius: 16,
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10,
+    shadowColor: THEME.brand,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
   },
   saveBtnText: { color: '#FFF', fontSize: 17, fontFamily: Typography.fonts.bold },
 
