@@ -651,10 +651,10 @@ function createStyles(THEME: any) {
   },
 
   // FAB
-  scrollTopBtn: {
-    position: 'absolute',
-    bottom: 100,
-    right: 30,
+scrollTopBtn: {
+     position: 'absolute',
+     bottom: 115,
+     right: 30,
     width: 44, height: 44, borderRadius: 22,
     backgroundColor: 'rgba(216, 67, 21, 0.88)',
     justifyContent: 'center', alignItems: 'center',
@@ -664,10 +664,10 @@ function createStyles(THEME: any) {
     shadowOpacity: 0.2,
     shadowRadius: 6,
   },
-  fab: {
-    position: 'absolute',
-    bottom: 26,
-    right: 24,
+fab: {
+     position: 'absolute',
+     bottom: 76,
+     right: 24,
     width: 60, height: 60, borderRadius: 30,
     backgroundColor: THEME.brand,
     justifyContent: 'center', alignItems: 'center',

@@ -465,9 +465,9 @@ function createStyles(THEME: any) {
     fontSize: 13,
     fontFamily: Typography.fonts.medium,
   },
-  toastContainer: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 100 : 80,
+toastContainer: {
+     position: 'absolute',
+     bottom: Platform.OS === 'ios' ? 85 : 75,
     left: 20,
     right: 20,
     backgroundColor: THEME.success,
