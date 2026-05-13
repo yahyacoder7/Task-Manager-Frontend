@@ -1,43 +1,24 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   SafeAreaView, ActivityIndicator, Alert, Modal, Pressable
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { getItem } from '../../utils/storage';
+import { formatDateFull, formatDateOnly, isToday } from '../../utils/date';
 import { Typography } from '../../constants/Typography';
+import { useAppTheme } from '../../constants/ThemeContext';
 
 const BASE_URL = 'http://localhost:3000';
-
-const THEME = {
-  background: '#0F0F0F',
-  card: '#1A1A1A',
-  brand: '#D84315',
-  text: '#FFFFFF',
-  secondaryText: '#A0A0A0',
-  success: '#4CAF50',
-  muted: '#3A3A3A',
-  divider: 'rgba(255,255,255,0.08)',
-};
 
 const REPEAT_UNIT_AR: Record<string, string> = {
   DAILY: 'يوم', WEEKLY: 'أسبوع', MONTHLY: 'شهر', YEARLY: 'سنة',
 };
 const EXPECTED_TIME_AR: Record<string, string> = {
   MORNING: 'صباحاً', AFTERNOON: 'ظهراً', EVENING: 'مساءً', NIGHT: 'ليلاً',
-};
-
-const formatFullDate = (iso: string) => {
-  if (!iso) return '';
-  try {
-    const d = new Date(iso);
-    return d.toLocaleString('en-US', {
-      weekday: 'long', year: 'numeric', month: 'long',
-      day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true,
-    });
-  } catch { return iso; }
 };
 
 export default function TaskDetailsScreen() {
@@ -53,20 +34,15 @@ export default function TaskDetailsScreen() {
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [aiAdvice, setAiAdvice] = useState<{ advice: string; source: string } | null>(null);
 
-  // Helper to determine if task is completed
+  const { theme: THEME } = useAppTheme();
+  const styles = useMemo(() => createStyles(THEME), [THEME]);
+
   const isEffectivelyCompleted = () => {
     if (!task) return false;
     if (task.isCompleted) return true;
     
-    // For repeating tasks, it is completed ONLY if completed today
     if (task.repeatUnit && task.taskcompletions && task.taskcompletions.length > 0) {
-      const today = new Date();
-      return task.taskcompletions.some((log: any) => {
-        const d = new Date(log.completedAt);
-        return d.getDate() === today.getDate() &&
-               d.getMonth() === today.getMonth() &&
-               d.getFullYear() === today.getFullYear();
-      });
+      return task.taskcompletions.some((log: any) => isToday(log.completedAt));
     }
 
     return false;
@@ -173,19 +149,25 @@ export default function TaskDetailsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={THEME.pageGradient as [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
       <Stack.Screen options={{
         headerTitle: '',
-        headerStyle: { backgroundColor: THEME.background },
+        headerStyle: { backgroundColor: 'rgba(216, 67, 21, 0.88)' },
         headerShadowVisible: false,
         headerRight: () => (
           <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
             <Text style={styles.headerTitle}>تفاصيل المهمة</Text>
-            <Ionicons name="arrow-forward" size={24} color={THEME.text} />
+            <Ionicons name="arrow-forward" size={24} color={THEME.white} />
           </TouchableOpacity>
         ),
         headerLeft: () => (
           <TouchableOpacity onPress={showTaskOptions} style={styles.optionsBtn}>
-            <Ionicons name="ellipsis-vertical" size={24} color={THEME.text} />
+            <Ionicons name="ellipsis-vertical-outline" size={24} color={THEME.white} />
           </TouchableOpacity>
         ),
       }} />
@@ -224,6 +206,16 @@ export default function TaskDetailsScreen() {
         {/* Details Section */}
         <View style={styles.detailsCard}>
           
+          {task.workplan && (
+            <View style={styles.detailRow}>
+              <View style={styles.detailLeft}>
+                <Ionicons name="briefcase-outline" size={20} color={THEME.secondaryText} />
+                <Text style={styles.detailLabel}>خطة العمل</Text>
+              </View>
+              <Text style={styles.detailValue}>{task.workplan.name}</Text>
+            </View>
+          )}
+
           {task.category && (
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
@@ -253,7 +245,7 @@ export default function TaskDetailsScreen() {
                 <Text style={styles.detailLabel}>تاريخ البدء</Text>
               </View>
               <Text style={styles.detailValue} numberOfLines={2}>
-                {formatFullDate(task.startDate)}
+                {formatDateOnly(task.startDate)}
               </Text>
             </View>
           )}
@@ -274,7 +266,7 @@ export default function TaskDetailsScreen() {
               <Text style={styles.detailLabel}>تاريخ الإنشاء</Text>
             </View>
             <Text style={[styles.detailValue, { fontSize: 12 }]} numberOfLines={1}>
-              {formatFullDate(task.createdAt)}
+              {formatDateFull(task.createdAt)}
             </Text>
           </View>
         </View>
@@ -301,7 +293,7 @@ export default function TaskDetailsScreen() {
                 {task.taskcompletions.map((log: any, idx: number) => (
                   <View key={log.completionId || idx} style={styles.logItem}>
                     <View style={styles.logDot} />
-                    <Text style={styles.logText}>{formatFullDate(log.completedAt)}</Text>
+                    <Text style={styles.logText}>{formatDateOnly(log.completedAt)}</Text>
                   </View>
                 ))}
               </View>
@@ -320,10 +312,10 @@ export default function TaskDetailsScreen() {
           onPress={completeTask}
         >
           {isCompleting ? (
-            <ActivityIndicator color="#FFF" />
+            <ActivityIndicator color={THEME.white} />
           ) : (
             <>
-              <Ionicons name={completed ? "checkmark-done" : "checkmark"} size={22} color={completed ? THEME.brand : "#FFF"} />
+              <Ionicons name={completed ? "checkmark-done" : "checkmark"} size={22} color={completed ? THEME.brand : THEME.white} />
               <Text style={[styles.completeBtnText, completed && { color: THEME.brand }]}>
                 {completed ? 'تم إنجاز المهمة' : 'إكمال المهمة'}
               </Text>
@@ -334,36 +326,49 @@ export default function TaskDetailsScreen() {
 
       {/* Options Modal */}
       <Modal visible={optionsModalVisible} transparent animationType="fade" onRequestClose={() => setOptionsModalVisible(false)}>
-        <Pressable style={styles.overlay} onPress={() => { console.log('Overlay pressed'); setOptionsModalVisible(false); }}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>خيارات المهمة</Text>
+        <Pressable style={styles.overlay} onPress={() => setOptionsModalVisible(false)}>
+          <Pressable style={styles.modalBox} onPress={e => e.stopPropagation()}>
+            <View style={styles.modalHdr}>
+              <Text style={styles.modalTitle}>خيارات المهمة</Text>
+              <TouchableOpacity onPress={() => setOptionsModalVisible(false)}>
+                <Ionicons name="close" size={22} color={THEME.text} />
+              </TouchableOpacity>
+            </View>
             
             <TouchableOpacity 
               style={styles.modalActionBtn} 
               onPress={() => { 
-                console.log('Edit pressed');
                 setOptionsModalVisible(false); 
                 router.push({ pathname: '/edit-todo/[id]', params: { id: id as string } } as any); 
               }}
             >
-              <Ionicons name="pencil" size={20} color={THEME.brand} />
-              <Text style={styles.modalActionText}>تعديل المهمة</Text>
+              <View style={[styles.modalActionIcon, { backgroundColor: 'rgba(216,67,21,0.1)' }]}>
+                <Ionicons name="document-text-outline" size={20} color={THEME.brand} />
+              </View>
+              <View style={styles.modalActionContent}>
+                <Text style={styles.modalActionText}>تعديل المهمة</Text>
+                <Text style={styles.modalActionSub}>تعديل العنوان، التصنيف، الوقت وغيرها</Text>
+              </View>
             </TouchableOpacity>
             
-            <View style={styles.modalDivider} />
+            <View style={{ height: 12 }} />
             
             <TouchableOpacity 
               style={styles.modalActionBtn} 
               onPress={() => { 
-                console.log('Delete pressed in modal');
                 setOptionsModalVisible(false); 
                 deleteTask(); 
               }}
             >
-              <Ionicons name="trash" size={20} color="#FF5252" />
-              <Text style={[styles.modalActionText, { color: '#FF5252' }]}>حذف المهمة</Text>
+              <View style={[styles.modalActionIcon, { backgroundColor: 'rgba(255,59,48,0.1)' }]}>
+                <Ionicons name="trash-outline" size={20} color={THEME.danger} />
+              </View>
+              <View style={styles.modalActionContent}>
+                <Text style={[styles.modalActionText, { color: THEME.danger }]}>حذف المهمة</Text>
+                <Text style={styles.modalActionSub}>هذا الإجراء لا يمكن التراجع عنه</Text>
+              </View>
             </TouchableOpacity>
-          </View>
+          </Pressable>
         </Pressable>
       </Modal>
 
@@ -372,7 +377,7 @@ export default function TaskDetailsScreen() {
         <Pressable style={styles.overlay} onPress={() => setConfirmDeleteVisible(false)}>
           <View style={styles.confirmModalBox}>
             <View style={styles.confirmIconCircle}>
-              <Ionicons name="warning" size={40} color="#FF5252" />
+              <Ionicons name="warning" size={40} color={THEME.danger} />
             </View>
             <Text style={styles.confirmTitle}>حذف المهمة</Text>
             <Text style={styles.confirmMessage}>
@@ -389,7 +394,7 @@ export default function TaskDetailsScreen() {
                 style={styles.deleteBtn} 
                 onPress={performDelete}
               >
-                <Ionicons name="trash-outline" size={18} color="#FFF" />
+                <Ionicons name="trash-outline" size={18} color={THEME.white} />
                 <Text style={styles.deleteBtnText}>حذف</Text>
               </TouchableOpacity>
             </View>
@@ -401,13 +406,14 @@ export default function TaskDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(THEME: any) {
+  return StyleSheet.create({
   container: { flex: 1, backgroundColor: THEME.background, direction: 'rtl' as any },
   centerContainer: { flex: 1, backgroundColor: THEME.background, justifyContent: 'center', alignItems: 'center' },
-  scroll: { padding: 16, paddingBottom: 100 },
+  scroll: { padding: 16, paddingTop: 16, paddingBottom: 100 },
   
   headerBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, marginRight: 10 },
-  headerTitle: { color: THEME.text, fontSize: 18, fontFamily: Typography.fonts.bold },
+  headerTitle: { color: THEME.white, fontSize: 18, fontFamily: Typography.fonts.bold },
   optionsBtn: { paddingHorizontal: 16, paddingVertical: 8 },
 
   mainCard: {
@@ -417,7 +423,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: THEME.divider,
-    shadowColor: '#000',
+    shadowColor: THEME.black,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -502,20 +508,20 @@ const styles = StyleSheet.create({
   },
   accordionHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 16, backgroundColor: 'rgba(255,255,255,0.02)',
+    padding: 16, backgroundColor: THEME.muted,
   },
   accordionTitle: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 15 },
   logsBadge: {
     backgroundColor: THEME.brand, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 2,
   },
-  logsBadgeText: { color: '#FFF', fontFamily: Typography.fonts.bold, fontSize: 12 },
+  logsBadgeText: { color: THEME.white, fontFamily: Typography.fonts.bold, fontSize: 12 },
   accordionBody: {
     padding: 16, paddingTop: 0,
     borderTopWidth: 1, borderTopColor: THEME.divider,
   },
   logItem: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)',
+    paddingVertical: 10,     borderBottomWidth: 1, borderBottomColor: THEME.divider,
   },
   logDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: THEME.brand },
   logText: { color: THEME.secondaryText, fontFamily: Typography.fonts.regular, fontSize: 14 },
@@ -541,18 +547,27 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: THEME.brand,
   },
   completeBtnText: {
-    color: '#FFF', fontFamily: Typography.fonts.bold, fontSize: 16,
+    color: THEME.white, fontFamily: Typography.fonts.bold, fontSize: 16,
   },
 
   overlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.65)' },
   modalBox: {
-    width: '80%', backgroundColor: THEME.card,
-    borderRadius: 22, padding: 24, borderWidth: 1, borderColor: THEME.divider,
+    width: '85%', backgroundColor: THEME.card,
+    borderRadius: 22, padding: 20, borderWidth: 1, borderColor: THEME.divider,
   },
-  modalTitle: { color: THEME.text, fontSize: 18, fontFamily: Typography.fonts.bold, marginBottom: 16, textAlign: 'center' },
-  modalActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, justifyContent: 'flex-start' },
-  modalActionText: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 16 },
-  modalDivider: { height: 1, backgroundColor: THEME.divider, marginVertical: 4 },
+  modalHdr: {
+    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  modalTitle: { color: THEME.text, fontSize: 17, fontFamily: Typography.fonts.bold },
+  modalActionBtn: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  modalActionIcon: {
+    width: 40, height: 40, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  modalActionContent: { flex: 1 },
+  modalActionText: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 15, textAlign: 'right' },
+  modalActionSub: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, marginTop: 2, textAlign: 'right' },
 
   confirmModalBox: {
     width: '85%',
@@ -604,14 +619,15 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     borderRadius: 14,
-    backgroundColor: '#FF5252',
+    backgroundColor: THEME.danger,
     flexDirection: 'row',
     justifyContent: 'center', alignItems: 'center',
     gap: 8,
   },
   deleteBtnText: {
-    color: '#FFF',
+    color: THEME.white,
     fontSize: 15,
     fontFamily: Typography.fonts.bold,
   },
-});
+  });
+}

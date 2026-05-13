@@ -1,26 +1,19 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, SafeAreaView, ActivityIndicator, RefreshControl,
+  ScrollView, SafeAreaView, ActivityIndicator, RefreshControl, TextInput,
+  Modal, Pressable, Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { getItem } from '../../utils/storage';
+import { formatDateShort, isToday } from '../../utils/date';
 import { Typography } from '../../constants/Typography';
+import { useAppTheme } from '../../constants/ThemeContext';
 
 const BASE_URL = 'http://localhost:3000';
-
-const THEME = {
-  background: '#0F0F0F',
-  card: '#1A1A1A',
-  brand: '#D84315',
-  text: '#FFFFFF',
-  secondaryText: '#A0A0A0',
-  success: '#4CAF50',
-  muted: '#3A3A3A',
-  chipBg: '#252525',
-};
 
 // ── Translation helpers ───────────────────────────────────────────────────────
 const REPEAT_UNIT_AR: Record<string, string> = {
@@ -33,58 +26,49 @@ const EXPECTED_TIME_ICON: Record<string, string> = {
   MORNING: '🌅', AFTERNOON: '☀️', EVENING: '🌆', NIGHT: '🌙',
 };
 
-const formatDate = (iso: string) => {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleString('en-US', {
-      month: 'short', day: 'numeric',
-      hour: '2-digit', minute: '2-digit', hour12: true,
-    });
-  } catch { return iso; }
-};
-
 // ── Task Card ─────────────────────────────────────────────────────────────────
 function TaskCard({ task }: { task: any }) {
+  const { theme: THEME } = useAppTheme();
+  const styles = useMemo(() => createStyles(THEME), [THEME]);
   const router = useRouter();
   const hasRepeat = !!task.repeatUnit;
 
   const isEffectivelyCompleted = (() => {
     if (task.isCompleted) return true;
     
-    // For repeating tasks, check if there is a completion log for today
     if (task.repeatUnit && task.taskcompletions && task.taskcompletions.length > 0) {
-      const today = new Date();
-      return task.taskcompletions.some((log: any) => {
-        const d = new Date(log.completedAt);
-        return d.getDate() === today.getDate() &&
-               d.getMonth() === today.getMonth() &&
-               d.getFullYear() === today.getFullYear();
-      });
+      return task.taskcompletions.some((log: any) => isToday(log.completedAt));
     }
     return false;
   })();
 
   const timeDisplay = task.startDate
-    ? { icon: '📅', text: formatDate(task.startDate) }
+    ? { icon: '📅', text: formatDateShort(task.startDate) }
     : task.expectedTime
     ? { icon: EXPECTED_TIME_ICON[task.expectedTime] || '🕐', text: EXPECTED_TIME_AR[task.expectedTime] || task.expectedTime }
     : null;
 
   // Dim the card instead of changing background color if completed
-  const cardStyle = { backgroundColor: '#1A1A1A' };
 
   return (
-    <TouchableOpacity 
-      activeOpacity={0.8}
-      onPress={() => router.push({ pathname: '/task/[id]', params: { id: task.todoId } } as any)}
-      style={[styles.card, cardStyle, isEffectivelyCompleted && styles.cardDone]}
-    >
+    <View style={[styles.card, isEffectivelyCompleted && styles.cardDone]}>
+      <LinearGradient
+        colors={THEME.cardGradient as [string, string]}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.gradientBg}
+      />
+      <TouchableOpacity 
+        activeOpacity={0.8}
+        onPress={() => router.push({ pathname: '/task/[id]', params: { id: task.todoId } } as any)}
+        style={styles.cardTouch}
+      >
       {/* Row 1: Title (Right) and Repeat Badge (Left) */}
       <View style={styles.cardHeader}>
         {hasRepeat ? (
           <View style={styles.repeatBadge}>
             <Text style={styles.repeatText}>
-              كل:{task.repeatInterval} {REPEAT_UNIT_AR[task.repeatUnit] || task.repeatUnit}
+              كل {task.repeatInterval} {REPEAT_UNIT_AR[task.repeatUnit] || task.repeatUnit}
             </Text>
           </View>
         ) : <View style={{ width: 4 }} />}
@@ -125,6 +109,7 @@ function TaskCard({ task }: { task: any }) {
         </View>
       </View>
     </TouchableOpacity>
+    </View>
   );
 }
 
@@ -138,6 +123,13 @@ export default function TasksScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError]         = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [catFiltering, setCatFiltering] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const { theme: THEME } = useAppTheme();
+  const styles = useMemo(() => createStyles(THEME), [THEME]);
 
   const fetchCategories = async () => {
     try {
@@ -184,44 +176,75 @@ export default function TasksScreen() {
   const isTaskCompleted = (t: any) => {
     if (t.isCompleted) return true;
     
-    // For repeating tasks, it's completed only if completed today
     if (t.repeatUnit && t.taskcompletions && t.taskcompletions.length > 0) {
-      const today = new Date();
-      return t.taskcompletions.some((log: any) => {
-        const d = new Date(log.completedAt);
-        return d.getDate() === today.getDate() &&
-               d.getMonth() === today.getMonth() &&
-               d.getFullYear() === today.getFullYear();
-      });
+      return t.taskcompletions.some((log: any) => isToday(log.completedAt));
     }
     return false;
   };
 
-  const pending   = tasks.filter(t => !isTaskCompleted(t));
-  const completed = tasks.filter(t => isTaskCompleted(t));
+  const filterBySearch = (t: any) => !searchQuery || t.title?.includes(searchQuery) || t.description?.includes(searchQuery);
+  const pending   = tasks.filter(t => !isTaskCompleted(t) && filterBySearch(t));
+  const completed = tasks.filter(t => isTaskCompleted(t) && filterBySearch(t));
 
   return (
     <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={THEME.pageGradient as [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      {/* Search */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={18} color={THEME.secondaryText} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="ابحث عن مهمة..."
+          placeholderTextColor={THEME.disabledText}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery ? (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={18} color={THEME.secondaryText} />
+          </TouchableOpacity>
+        ) : null}
+      </View>
       {/* Category Filter */}
       <View style={styles.filterContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-          <TouchableOpacity 
-            style={[styles.filterChip, selectedCategory === null && styles.filterChipActive]}
-            onPress={() => setSelectedCategory(null)}
-          >
-            <Text style={[styles.filterChipText, selectedCategory === null && styles.filterChipTextActive]}>الكل</Text>
-          </TouchableOpacity>
-          {categories.map(cat => (
-            <TouchableOpacity 
-              key={cat.categoryId}
-              style={[styles.filterChip, selectedCategory === cat.categoryId && styles.filterChipActive]}
-              onPress={() => setSelectedCategory(cat.categoryId)}
-            >
-              <Text style={[styles.filterChipText, selectedCategory === cat.categoryId && styles.filterChipTextActive]}>{cat.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <TouchableOpacity style={styles.catDropdown} onPress={() => setCatFiltering(true)}>
+          <Ionicons name="folder-outline" size={16} color={THEME.text} />
+          <Text style={styles.catDropdownText}>
+            {selectedCategory ? categories.find(c => c.categoryId === selectedCategory)?.name || 'الكل' : 'الكل'}
+          </Text>
+          <Ionicons name="chevron-down" size={16} color={THEME.secondaryText} />
+        </TouchableOpacity>
       </View>
+
+      <Modal visible={catFiltering} transparent animationType="fade" onRequestClose={() => setCatFiltering(false)}>
+        <Pressable style={styles.overlay} onPress={() => setCatFiltering(false)}>
+          <Pressable style={styles.catDropdownModal} onPress={e => e.stopPropagation()}>
+            <View style={styles.catDropdownHdr}>
+              <Text style={styles.catDropdownTitle}>اختر تصنيف</Text>
+              <TouchableOpacity onPress={() => setCatFiltering(false)}>
+                <Ionicons name="close" size={22} color={THEME.text} />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.catDropdownOption} onPress={() => { setSelectedCategory(null); setCatFiltering(false); }}>
+              <Ionicons name="apps-outline" size={18} color={THEME.brand} />
+              <Text style={styles.catDropdownOptText}>الكل</Text>
+              {selectedCategory === null && <Ionicons name="checkmark-circle" size={18} color={THEME.brand} style={{ marginLeft: 'auto' }} />}
+            </TouchableOpacity>
+            {categories.map(cat => (
+              <TouchableOpacity key={cat.categoryId} style={styles.catDropdownOption} onPress={() => { setSelectedCategory(cat.categoryId); setCatFiltering(false); }}>
+                <Ionicons name="folder-outline" size={18} color={THEME.brand} />
+                <Text style={styles.catDropdownOptText}>{cat.name}</Text>
+                {selectedCategory === cat.categoryId && <Ionicons name="checkmark-circle" size={18} color={THEME.brand} style={{ marginLeft: 'auto' }} />}
+              </TouchableOpacity>
+            ))}
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {isLoading ? (
         <View style={styles.center}>
@@ -237,8 +260,11 @@ export default function TasksScreen() {
         </View>
       ) : (
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
+          onScroll={(e) => setShowScrollTop(e.nativeEvent.contentOffset.y > 200)}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
@@ -247,11 +273,17 @@ export default function TasksScreen() {
             />
           }
         >
-          {tasks.length === 0 ? (
+          {tasks.length === 0 && !searchQuery ? (
             <View style={styles.center}>
               <Ionicons name="clipboard-outline" size={72} color={THEME.muted} />
               <Text style={styles.emptyTitle}>لا توجد مهام بعد</Text>
               <Text style={styles.emptySubtitle}>اضغط + لإضافة أولى مهامك</Text>
+            </View>
+          ) : searchQuery && pending.length === 0 && completed.length === 0 ? (
+            <View style={styles.center}>
+              <Ionicons name="search-outline" size={72} color={THEME.muted} />
+              <Text style={styles.emptyTitle}>لا توجد نتائج</Text>
+              <Text style={styles.emptySubtitle}>لا توجد مهام تطابق بحث "{searchQuery}"</Text>
             </View>
           ) : (
             <>
@@ -269,7 +301,7 @@ export default function TasksScreen() {
               {/* Completed tasks */}
               {completed.length > 0 && (
                 <>
-                  <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+                  <View style={[styles.sectionHeader, { marginTop: 32 }]}>
                     <Text style={styles.sectionCount}>{completed.length}</Text>
                     <Text style={[styles.sectionTitle, { color: THEME.brand }]}>المنجزة</Text>
                   </View>
@@ -289,23 +321,115 @@ export default function TasksScreen() {
         onPress={() => router.push('/add-todo')}
         activeOpacity={0.85}
       >
-        <Ionicons name="add" size={32} color="#FFF" />
+        <Ionicons name="add" size={32} color={THEME.white} />
       </TouchableOpacity>
+
+      {showScrollTop && (
+        <TouchableOpacity
+          style={styles.scrollTopBtn}
+          onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="arrow-up" size={22} color={THEME.white} />
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
+function createStyles(THEME: any) {
+  return StyleSheet.create({
   container: { flex: 1, backgroundColor: THEME.background, direction: 'rtl' as any },
   scroll: { padding: 16, flexGrow: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80, gap: 12 },
 
   // Filters
   filterContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 10,
+    alignItems: 'center',
+  },
+  catDropdown: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: THEME.inputBg,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 40,
+    borderWidth: 1,
+    borderColor: THEME.divider,
+    gap: 6,
+  },
+  catDropdownText: {
+    flex: 1,
+    color: THEME.text,
+    fontSize: 14,
+    fontFamily: Typography.fonts.medium,
+    textAlign: 'right',
+  },
+  catDropdownModal: {
+    width: '80%',
+    backgroundColor: THEME.card,
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: THEME.divider,
+    maxHeight: 400,
+  },
+  catDropdownHdr: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  catDropdownTitle: {
+    color: THEME.text,
+    fontSize: 16,
+    fontFamily: Typography.fonts.bold,
+  },
+  catDropdownOption: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
     paddingVertical: 12,
+    gap: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: THEME.divider,
+  },
+  catDropdownOptText: {
+    flex: 1,
+    color: THEME.text,
+    fontSize: 14,
+    fontFamily: Typography.fonts.regular,
+    textAlign: 'right',
+  },
+  overlay: {
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.65)',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: THEME.inputBg,
+    marginHorizontal: 16,
+    marginVertical: 10,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 42,
+    borderWidth: 1,
+    borderColor: THEME.divider,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: THEME.text,
+    fontSize: 14,
+    fontFamily: Typography.fonts.regular,
+    textAlign: 'right',
+    outlineStyle: 'none' as any,
   },
   filterScroll: {
     paddingHorizontal: 16,
@@ -318,7 +442,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: THEME.chipBg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: THEME.divider,
   },
   filterChipActive: {
     backgroundColor: THEME.brand,
@@ -335,12 +459,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   filterChipTextActive: {
-    color: '#FFF',
+    color: THEME.white,
   },
 
   // Section headers
   sectionHeader: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
     marginBottom: 12,
@@ -351,7 +475,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   sectionCount: {
-    color: '#FFF',
+    color: THEME.white,
     backgroundColor: THEME.brand,
     fontFamily: Typography.fonts.bold,
     fontSize: 12,
@@ -367,13 +491,24 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: '#292929',
     gap: 10,
-    shadowColor: '#000',
+    shadowColor: THEME.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.12,
     shadowRadius: 6,
     elevation: 3,
+  },
+  gradientBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 18,
+  },
+  cardTouch: {
+    borderRadius: 18,
   },
   cardDone: {
     borderColor: 'rgba(216,67,21,0.3)',
@@ -416,7 +551,7 @@ const styles = StyleSheet.create({
 
   // Description
   desc: {
-    color: THEME.secondaryText,
+    color: THEME.text,
     fontFamily: Typography.fonts.regular,
     fontSize: 14,
     textAlign: 'right',
@@ -431,7 +566,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
+    borderTopColor: THEME.divider,
   },
   footerRight: {
     flexDirection: 'row',
@@ -463,13 +598,13 @@ const styles = StyleSheet.create({
 
   // Category Badge
   categoryBadge: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: THEME.muted,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
   categoryText: {
-    color: THEME.secondaryText,
+    color: THEME.text,
     fontFamily: Typography.fonts.medium,
     fontSize: 12,
   },
@@ -482,7 +617,7 @@ const styles = StyleSheet.create({
   },
   timeIcon: { fontSize: 14 },
   timeText: {
-    color: '#888',
+    color: THEME.text,
     fontFamily: Typography.fonts.medium,
     fontSize: 12,
   },
@@ -512,10 +647,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   retryText: {
-    color: '#FFF', fontFamily: Typography.fonts.bold, fontSize: 14,
+    color: THEME.white, fontFamily: Typography.fonts.bold, fontSize: 14,
   },
 
   // FAB
+  scrollTopBtn: {
+    position: 'absolute',
+    bottom: 100,
+    right: 30,
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: 'rgba(216, 67, 21, 0.88)',
+    justifyContent: 'center', alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
   fab: {
     position: 'absolute',
     bottom: 26,
@@ -529,4 +677,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 12,
   },
-});
+  });
+}

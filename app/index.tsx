@@ -221,17 +221,6 @@ export default function LoginScreen() {
                       keyboardType="email-address"
                       autoCapitalize="none"
                     />
-                    <TextInput
-                      style={[styles.input, { color: theme.text }] as any}
-                      placeholder="اسم_المستخدم@taskflow.dev"
-                      placeholderTextColor={theme.secondaryText}
-                      value={email}
-                      onChangeText={setEmail}
-                      onFocus={() => setFocusedInput("email")}
-                      onBlur={() => setFocusedInput(null)}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
                   </View>
                 </View>
 

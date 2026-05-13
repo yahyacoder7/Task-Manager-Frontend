@@ -1,49 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
+import React, { useEffect, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { getItem, saveItem } from '../utils/storage';
 import { Typography } from '../constants/Typography';
+import { useAppTheme } from '../constants/ThemeContext';
 
 const BASE_URL = "http://localhost:3000";
-
-const THEME = {
-  background: '#0F0F0F',
-  secondaryBackground: '#1A1A1A',
-  brand: '#D84315',
-  text: '#FFFFFF',
-  secondaryText: '#A0A0A0',
-  inputBg: '#252525',
-};
 
 export default function EditProfileScreen() {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    loadThemePreference();
-  }, []);
-
-  const loadThemePreference = async () => {
-    const savedTheme = await getItem('appTheme');
-    if (savedTheme !== null) {
-      setIsDarkMode(savedTheme === 'dark');
-    }
-  };
-
-  const toggleTheme = async () => {
-    const newTheme = isDarkMode ? 'light' : 'dark';
-    setIsDarkMode(!isDarkMode);
-    await saveItem('appTheme', newTheme);
-    Alert.alert(
-      'تم تغيير السمة',
-      newTheme === 'dark' ? 'تم تطبيق السمة الداكنة' : 'تم تطبيق السمة الفاتحة',
-      [{ text: 'حسناً' }]
-    );
-  };
+  const { theme: THEME } = useAppTheme();
+  const styles = useMemo(() => createStyles(THEME), [THEME]);
 
   useEffect(() => {
     loadCurrentName();
@@ -94,48 +66,24 @@ export default function EditProfileScreen() {
       <Stack.Screen options={{ 
         headerShown: true, 
         headerTitle: "", // Disable default title
-        headerStyle: { backgroundColor: THEME.background },
+        headerStyle: { backgroundColor: 'rgba(216, 67, 21, 0.88)' },
         headerShadowVisible: false,
+        headerTintColor: '#FFFFFF',
         headerRight: () => ( 
           <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, gap: 12 }}>
-            <TouchableOpacity 
-              onPress={toggleTheme} 
-              style={{ 
-                flexDirection: 'row', 
-                alignItems: 'center',
-                backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 20,
-                gap: 8
-              }}
-            >
-              <Ionicons 
-                name={isDarkMode ? 'moon' : 'sunny'} 
-                size={20} 
-                color={isDarkMode ? '#FFD700' : '#FF8C00'} 
-              />
-              <Text style={{ 
-                color: THEME.text, 
-                fontSize: 13, 
-                fontFamily: Typography.fonts.medium
-              }}>
-                {isDarkMode ? 'داكن' : 'فاتح'}
-              </Text>
-            </TouchableOpacity>
             <TouchableOpacity 
               onPress={() => router.back()} 
               style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
             >
               <Text style={{ 
-                color: THEME.text, 
+                color: '#FFFFFF', 
                 fontSize: 16, 
                 fontWeight: 'bold',
                 fontFamily: Typography.fonts.bold
               }}>
                 تعديل الملف الشخصي
               </Text>
-              <Ionicons name="arrow-forward" size={22} color={THEME.text} />
+              <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         ),
@@ -168,7 +116,7 @@ export default function EditProfileScreen() {
             {isSaving ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.updateButtonText}>حفظ التغييرات</Text>
+              <><Ionicons name="checkmark-circle" size={20} color={THEME.white} /><Text style={styles.updateButtonText}>حفظ التغييرات</Text></>
             )}
           </TouchableOpacity>
         </View>
@@ -184,7 +132,8 @@ export default function EditProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(THEME: any) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: THEME.background,
@@ -212,7 +161,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 60,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: THEME.divider,
     marginBottom: 24,
   },
   inputIcon: {
@@ -226,11 +175,13 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.regular,
   },
   updateButton: {
-    backgroundColor: THEME.brand,
+    backgroundColor: 'rgba(216, 67, 21, 0.88)',
     height: 60,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
     shadowColor: THEME.brand,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -238,14 +189,14 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   updateButtonText: {
-    color: '#FFFFFF',
+    color: THEME.white,
     fontSize: 18,
     fontWeight: 'bold',
     fontFamily: Typography.fonts.bold,
   },
   infoBox: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: THEME.muted,
     padding: 16,
     borderRadius: 12,
     marginTop: 30,
@@ -260,4 +211,5 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontFamily: Typography.fonts.regular,
   },
-});
+  });
+}

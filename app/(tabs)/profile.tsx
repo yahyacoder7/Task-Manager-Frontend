@@ -1,26 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getItem, deleteItem, saveItem } from '../../utils/storage';
+import { formatDateArabic } from '../../utils/date';
 import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { useCallback, useRef } from 'react';
 import { Typography } from '../../constants/Typography';
+import { useAppTheme } from '../../constants/ThemeContext';
 import { Animated } from 'react-native';
 
 const BASE_URL = "http://localhost:3000";
 
-const THEME = {
-  background: '#0F0F0F',
-  secondaryBackground: '#1A1A1A',
-  brand: '#D84315',
-  text: '#FFFFFF',
-  secondaryText: '#A0A0A0',
-  glass: 'rgba(255, 255, 255, 0.05)',
-  glassBorder: 'rgba(255, 255, 255, 0.1)',
-};
-
 export default function ProfileScreen() {
+  const { theme: THEME, isDark, toggleTheme } = useAppTheme();
+  const styles = useMemo(() => createStyles(THEME), [THEME]);
   const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState({ completed: 0, incomplete: 0 });
   const [isLoading, setIsLoading] = useState(false);
@@ -108,25 +102,18 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
-      // Clear storage
       await deleteItem('userToken');
       await deleteItem('userData');
-      
-      console.log("Logged out successfully");
-      
-      // Force navigation to login screen
-      router.replace('/');
+      await deleteItem('userEmail');
     } catch (err) {
-      console.error("Logout Error:", err);
-      // Fallback navigation
+      console.error("Error clearing storage:", err);
+    }
+    
+    if (Platform.OS === 'web') {
+      window.location.href = '/';
+    } else {
       router.replace('/');
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'غير معروف';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   const GlassCard = ({ children, style }: any) => {
@@ -158,6 +145,13 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
+        <View style={styles.themeToggleRow}>
+          <TouchableOpacity onPress={toggleTheme} style={styles.themeToggleBtn}>
+            <Ionicons name={isDark ? 'moon-outline' : 'sunny-outline'} size={20} color={THEME.text} />
+            <Text style={[styles.themeToggleText, { color: THEME.secondaryText }]}>{isDark ? 'داكن' : 'فاتح'}</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
@@ -175,7 +169,7 @@ export default function ProfileScreen() {
             <View style={styles.infoRow}>
               <View style={styles.infoItem}>
                 <Text style={styles.infoLabel}>تاريخ الانضمام</Text>
-                <Text style={styles.infoValue}>{formatDate(user?.createdAt)}</Text>
+                <Text style={styles.infoValue}>{formatDateArabic(user?.createdAt)}</Text>
               </View>
               <View style={styles.infoDivider} />
               <View style={styles.infoItem}>
@@ -189,7 +183,7 @@ export default function ProfileScreen() {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>إعدادات الحساب</Text>
-            
+
             <TouchableOpacity style={styles.actionButton} onPress={handleUpdateName}>
               <View style={styles.actionIconContainer}>
                 <Ionicons name="person-outline" size={22} color={THEME.brand} />
@@ -219,12 +213,12 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>نظرة سريعة</Text>
             <View style={styles.statsRow}>
               <GlassCard style={styles.statBox}>
-                <Ionicons name="checkmark-done-circle" size={28} color="#4CAF50" />
+                <Ionicons name="checkmark-done-circle" size={28} color={THEME.success} />
                 <Text style={styles.statValue}>{stats.completed}</Text>
                 <Text style={styles.statLabel}>مهمة مكتملة</Text>
               </GlassCard>
               <GlassCard style={styles.statBox}>
-                <Ionicons name="time-outline" size={28} color="#FF9800" />
+                <Ionicons name="time-outline" size={28} color={THEME.warning} />
                 <Text style={styles.statValue}>{stats.incomplete}</Text>
                 <Text style={styles.statLabel}>مهام قيد العمل</Text>
               </GlassCard>
@@ -233,7 +227,7 @@ export default function ProfileScreen() {
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#FF5252" />
+          <Ionicons name="log-out-outline" size={24} color={THEME.danger} />
           <Text style={styles.logoutText}>تسجيل الخروج</Text>
         </TouchableOpacity>
 
@@ -243,7 +237,7 @@ export default function ProfileScreen() {
       {/* Toast Message */}
       {showToast && (
         <Animated.View style={[styles.toastContainer, { opacity: toastOpacity }]}>
-          <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+          <Ionicons name="checkmark-circle" size={20} color={THEME.white} />
           <Text style={styles.toastText}>تم تحديث الاسم بنجاح</Text>
         </Animated.View>
       )}
@@ -251,14 +245,16 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(THEME: any) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: THEME.background,
   },
   scrollContent: {
     padding: 20,
     paddingTop: 24,
+    paddingBottom: 100,
   },
   header: {
     alignItems: 'center',
@@ -272,16 +268,16 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#D84315',
+    backgroundColor: THEME.brand,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
-    borderColor: '#1A1A1A',
+    borderColor: THEME.card,
   },
   avatarText: {
     fontSize: 40,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: THEME.white,
     fontFamily: Typography.fonts.bold,
   },
   activeBadge: {
@@ -291,33 +287,34 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#4CAF50',
+    backgroundColor: THEME.success,
     borderWidth: 3,
-    borderColor: '#1A1A1A',
+    borderColor: THEME.card,
   },
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: THEME.text,
     marginBottom: 4,
     fontFamily: Typography.fonts.bold,
   },
   userEmail: {
     fontSize: 14,
-    color: '#A0A0A0',
+    color: THEME.secondaryText,
     fontFamily: Typography.fonts.regular,
   },
   glassCardContainer: {
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: THEME.divider,
+    backgroundColor: THEME.glass,
   },
   glassCardWeb: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: THEME.glass,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: THEME.divider,
     padding: 20,
   },
   blurView: {
@@ -337,20 +334,20 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 12,
-    color: '#A0A0A0',
+    color: THEME.secondaryText,
     marginBottom: 4,
     fontFamily: Typography.fonts.regular,
   },
   infoValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: THEME.text,
     fontFamily: Typography.fonts.medium,
   },
   infoDivider: {
     width: 1,
     height: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: THEME.divider,
   },
   statusBadge: {
     backgroundColor: 'rgba(76, 175, 80, 0.2)',
@@ -359,7 +356,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   statusText: {
-    color: '#4CAF50',
+    color: THEME.success,
     fontSize: 12,
     fontWeight: 'bold',
     fontFamily: Typography.fonts.bold,
@@ -370,7 +367,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: THEME.text,
     marginBottom: 16,
     textAlign: 'right',
     fontFamily: Typography.fonts.bold,
@@ -378,10 +375,12 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A1A1A',
+    backgroundColor: THEME.card,
     padding: 16,
     borderRadius: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: THEME.divider,
   },
   actionIconContainer: {
     width: 40,
@@ -395,7 +394,7 @@ const styles = StyleSheet.create({
   actionText: {
     flex: 1,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: THEME.text,
     textAlign: 'right',
     fontFamily: Typography.fonts.medium,
   },
@@ -412,13 +411,13 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: THEME.text,
     marginTop: 8,
     fontFamily: Typography.fonts.bold,
   },
   statLabel: {
     fontSize: 12,
-    color: '#A0A0A0',
+    color: THEME.secondaryText,
     marginTop: 2,
     fontFamily: Typography.fonts.regular,
   },
@@ -427,14 +426,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
+    backgroundColor: THEME.dangerBg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 82, 82, 0.3)',
+    borderColor: THEME.danger,
     borderRadius: 16,
     marginBottom: 20,
     gap: 10,
   },
   logoutText: {
-    color: '#FF5252',
+    color: THEME.danger,
     fontSize: 16,
     fontWeight: 'bold',
     fontFamily: Typography.fonts.bold,
@@ -442,32 +442,52 @@ const styles = StyleSheet.create({
   versionText: {
     textAlign: 'center',
     fontSize: 12,
-    color: '#A0A0A0',
+    color: THEME.secondaryText,
     marginBottom: 20,
     fontFamily: Typography.fonts.regular,
+  },
+  themeToggleRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginBottom: 8,
+  },
+  themeToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: THEME.divider,
+  },
+  themeToggleText: {
+    fontSize: 13,
+    fontFamily: Typography.fonts.medium,
   },
   toastContainer: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 100 : 80,
     left: 20,
     right: 20,
-    backgroundColor: '#4CAF50',
+    backgroundColor: THEME.success,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
     borderRadius: 12,
     gap: 10,
-    shadowColor: '#000',
+    shadowColor: THEME.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 5,
   },
   toastText: {
-    color: '#FFFFFF',
+    color: THEME.white,
     fontSize: 14,
     fontWeight: 'bold',
     fontFamily: Typography.fonts.medium,
   },
 });
+}

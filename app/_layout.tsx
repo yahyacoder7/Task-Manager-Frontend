@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { ThemeProvider as AppThemeProvider, useAppTheme } from '../constants/ThemeContext';
 
 import { 
   Rubik_400Regular, 
@@ -66,7 +67,17 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={DarkTheme}>
+    <AppThemeProvider>
+      <NavContent />
+    </AppThemeProvider>
+  );
+}
+
+function NavContent() {
+  const { isDark } = useAppTheme();
+
+  return (
+    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />

@@ -3,24 +3,14 @@
  * - Native: react-native-modal-datetime-picker (native UI)
  * - Web:    custom 2-step modal with a styled time spinner (AM/PM + ▲▼ arrows)
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   Modal, Pressable, Platform, TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Typography } from '../constants/Typography';
-
-const THEME = {
-  background: '#0F0F0F',
-  secondaryBackground: '#1A1A1A',
-  card: '#222222',
-  brand: '#D84315',
-  text: '#FFFFFF',
-  secondaryText: '#A0A0A0',
-  inputBg: '#252525',
-  disabledText: '#555',
-};
+import { useAppTheme } from '../constants/ThemeContext';
 
 interface Props {
   value: string;
@@ -45,6 +35,8 @@ function TimeSpinner({
   onMinuteChange: (m: number) => void;
   onPMChange: (pm: boolean) => void;
 }) {
+  const { theme: THEME } = useAppTheme();
+  const ts = useMemo(() => createTsStyles(THEME), [THEME]);
   const pad = (n: number) => String(n).padStart(2, '0');
 
   const incHour = () => onHourChange(hour === 12 ? 1 : hour + 1);
@@ -125,7 +117,8 @@ function TimeSpinner({
   );
 }
 
-const ts = StyleSheet.create({
+function createTsStyles(THEME: any) {
+  return StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -156,7 +149,7 @@ const ts = StyleSheet.create({
     height: 52,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: THEME.divider,
     textAlign: 'center',
   },
   colon: {
@@ -173,7 +166,7 @@ const ts = StyleSheet.create({
     paddingHorizontal: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: THEME.divider,
   },
   ampmActive: {
     backgroundColor: 'rgba(216,67,21,0.15)',
@@ -190,7 +183,8 @@ const ts = StyleSheet.create({
     fontSize: 10,
   },
   ampmTextActive: { color: THEME.brand },
-});
+  });
+}
 
 // ── Web 2-step modal ──────────────────────────────────────────────────────────
 function WebPicker({ value, onConfirm, onCancel }: {
@@ -198,6 +192,8 @@ function WebPicker({ value, onConfirm, onCancel }: {
   onConfirm: (date: Date) => void;
   onCancel: () => void;
 }) {
+  const { theme: THEME } = useAppTheme();
+  const wp = useMemo(() => createWpStyles(THEME), [THEME]);
   const now = new Date();
   const toDateStr = (d: Date) => d.toISOString().split('T')[0];
 
@@ -239,7 +235,7 @@ function WebPicker({ value, onConfirm, onCancel }: {
           onChange={e => setDateStr(e.target.value)}
           style={{
             background: THEME.inputBg, color: THEME.text,
-            border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
+            border: `1px solid ${THEME.divider}`, borderRadius: 12,
             padding: '14px 16px', fontSize: 16,
             width: '100%', boxSizing: 'border-box',
             outline: 'none', fontFamily: 'inherit',
@@ -261,12 +257,12 @@ function WebPicker({ value, onConfirm, onCancel }: {
             <TouchableOpacity style={[wp.btn, wp.cancelBtn]} onPress={onCancel}>
               <Text style={wp.btnText}>إلغاء</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[wp.btn, wp.confirmBtn, !dateStr && { opacity: 0.5 }]}
+            <TouchableOpacity style={[wp.btn, wp.confirmBtn, !dateStr && { opacity: 0.5 }]}
               disabled={!dateStr}
               onPress={() => setStep('time')}
             >
-              <Text style={wp.btnText}>التالي ←</Text>
+              <Ionicons name="checkmark-outline" size={18} color={THEME.brand} />
+              <Text style={wp.confirmBtnText}>التالي</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -275,7 +271,8 @@ function WebPicker({ value, onConfirm, onCancel }: {
               <Text style={wp.btnText}>→ رجوع</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[wp.btn, wp.confirmBtn]} onPress={handleConfirm}>
-              <Text style={wp.btnText}>تأكيد ✓</Text>
+              <Ionicons name="checkmark-outline" size={18} color={THEME.brand} />
+              <Text style={wp.confirmBtnText}>تأكيد</Text>
             </TouchableOpacity>
           </>
         )}
@@ -284,21 +281,24 @@ function WebPicker({ value, onConfirm, onCancel }: {
   );
 }
 
-const wp = StyleSheet.create({
+function createWpStyles(THEME: any) {
+  return StyleSheet.create({
   stepRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.15)' },
+  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: THEME.muted },
   dotActive: { backgroundColor: THEME.brand, width: 12, height: 12, borderRadius: 6 },
-  stepLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginHorizontal: 10 },
+  stepLine: { flex: 1, height: 1, backgroundColor: THEME.divider, marginHorizontal: 10 },
   stepLabel: {
     color: THEME.text, fontFamily: Typography.fonts.bold,
     fontSize: 15, textAlign: 'center', marginBottom: 20,
   },
-  btnRow: { flexDirection: 'row', gap: 12 },
-  btn: { flex: 1, height: 46, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  confirmBtn: { backgroundColor: THEME.brand },
-  cancelBtn: { backgroundColor: 'rgba(255,255,255,0.06)' },
-  btnText: { color: '#FFF', fontFamily: Typography.fonts.bold, fontSize: 15 },
-});
+  btnRow: { flexDirection: 'row-reverse', gap: 12 },
+  btn: { flex: 1, height: 46, borderRadius: 12, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 6 },
+  confirmBtn: { backgroundColor: 'rgba(216, 67, 21, 0.1)', borderWidth: 1, borderColor: THEME.brand },
+  cancelBtn: { backgroundColor: THEME.muted, borderWidth: 1, borderColor: THEME.divider },
+  btnText: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 15 },
+  confirmBtnText: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 15 },
+  });
+}
 
 // ── Main exported component ───────────────────────────────────────────────────
 export default function SmartDateTimePicker({ value, onChange, disabled }: Props) {
@@ -306,6 +306,9 @@ export default function SmartDateTimePicker({ value, onChange, disabled }: Props
   const [nativeStep, setNativeStep] = useState<'date' | 'time'>('date');
   const [tempDate, setTempDate]     = useState<Date | null>(null);
   const [showWeb, setShowWeb]       = useState(false);
+
+  const { theme: THEME } = useAppTheme();
+  const s = useMemo(() => createSStyles(THEME), [THEME]);
 
   const formatDisplay = (iso: string) => {
     if (!iso) return null;
@@ -382,7 +385,12 @@ export default function SmartDateTimePicker({ value, onChange, disabled }: Props
         <Modal visible={showWeb} transparent animationType="fade" onRequestClose={() => setShowWeb(false)}>
           <Pressable style={s.overlay} onPress={() => setShowWeb(false)}>
             <Pressable style={s.modalBox} onPress={e => e.stopPropagation()}>
-              <Text style={s.modalTitle}>اختر التاريخ والوقت</Text>
+              <View style={{ flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <Text style={s.modalTitle}>اختر التاريخ والوقت</Text>
+                <TouchableOpacity onPress={() => setShowWeb(false)}>
+                  <Ionicons name="close" size={24} color={THEME.text} />
+                </TouchableOpacity>
+              </View>
               <WebPicker
                 value={value}
                 onConfirm={d => { onChange(d.toISOString()); setShowWeb(false); }}
@@ -396,13 +404,14 @@ export default function SmartDateTimePicker({ value, onChange, disabled }: Props
   );
 }
 
-const s = StyleSheet.create({
+function createSStyles(THEME: any) {
+  return StyleSheet.create({
   trigger: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     backgroundColor: THEME.inputBg, borderRadius: 14, padding: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', marginBottom: 8,
+    borderWidth: 1, borderColor: THEME.divider, marginBottom: 8,
   },
-  triggerDisabled: { opacity: 0.4, borderColor: 'rgba(255,255,255,0.03)' },
+  triggerDisabled: { opacity: 0.4, borderColor: THEME.divider },
   triggerText: {
     flex: 1, color: THEME.text,
     fontFamily: Typography.fonts.regular, fontSize: 15, textAlign: 'right',
@@ -415,11 +424,12 @@ const s = StyleSheet.create({
     width: '92%', maxWidth: 420,
     backgroundColor: THEME.secondaryBackground,
     borderRadius: 24, padding: 24,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1, borderColor: THEME.divider,
     overflow: 'hidden' as any,
   },
   modalTitle: {
     color: THEME.text, fontSize: 18,
     fontFamily: Typography.fonts.bold, textAlign: 'right', marginBottom: 20,
   },
-});
+  });
+}
