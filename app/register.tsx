@@ -1,5 +1,5 @@
 import Colors from "@/constants/Colors";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -137,8 +137,8 @@ export default function RegisterScreen() {
                   },
                 ]}
               >
-                <Ionicons
-                  name="person-outline"
+                <MaterialCommunityIcons
+                  name="account-outline"
                   size={20}
                   color={
                     focusedInput === "name" ? theme.brand : theme.secondaryText
@@ -185,8 +185,8 @@ export default function RegisterScreen() {
                   },
                 ]}
               >
-                <Ionicons
-                  name="mail-outline"
+                <MaterialCommunityIcons
+                  name="email-outline"
                   size={20}
                   color={
                     focusedInput === "email" ? theme.brand : theme.secondaryText
@@ -237,8 +237,8 @@ export default function RegisterScreen() {
                   },
                 ]}
               >
-                <Ionicons
-                  name="lock-closed-outline"
+                <MaterialCommunityIcons
+                  name="lock-outline"
                   size={20}
                   color={
                     focusedInput === "password"
@@ -261,11 +261,7 @@ export default function RegisterScreen() {
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeIcon}
                 >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={20}
-                    color={theme.secondaryText}
-                  />
+                  <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={20} color={theme.secondaryText} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -283,7 +279,7 @@ export default function RegisterScreen() {
                 <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
                 <>
-                  <Ionicons name="person-add-outline" size={20} color="#FFFFFF" />
+                  <MaterialCommunityIcons name="account-plus-outline" size={20} color="#FFFFFF" />
                   <Text style={styles.loginButtonText}>إنشاء حساب جديد</Text>
                 </>
               )}
@@ -316,7 +312,7 @@ export default function RegisterScreen() {
                   { backgroundColor: theme.secondaryBackground },
                 ]}
               >
-                <Ionicons name="logo-google" size={24} color="#EA4335" />
+                <MaterialCommunityIcons name="google" size={24} color="#EA4335" />
               </TouchableOpacity>
             </View>
 

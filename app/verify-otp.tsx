@@ -1,5 +1,5 @@
 import Colors from "@/constants/Colors";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -164,7 +164,7 @@ export default function VerifyOtpScreen() {
         >
           {result ? (
             <View style={styles.successContainer}>
-              <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
+              <MaterialCommunityIcons name="check-circle" size={80} color="#4CAF50" />
               <Text style={[styles.successTitle, { color: theme.text }]}>
                 تم إنشاء الحساب بنجاح!
               </Text>
@@ -203,8 +203,8 @@ export default function VerifyOtpScreen() {
                   router.replace("/register");
                 }}
               >
-                <Ionicons
-                  name="person-add-outline"
+                <MaterialCommunityIcons
+                  name="account-plus-outline"
                   size={20}
                   color={theme.brand}
                 />
@@ -329,7 +329,7 @@ export default function VerifyOtpScreen() {
                   style={styles.backButton}
                   onPress={() => router.back()}
                 >
-                  <Ionicons name="arrow-back" size={20} color={theme.brand} />
+                  <MaterialCommunityIcons name="arrow-left" size={20} color={theme.brand} />
                   <Text style={[styles.backText, { color: theme.brand }]}>
                     تغيير البريد الإلكتروني
                   </Text>

@@ -1,16 +1,23 @@
 import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { Typography } from '../../constants/Typography';
 import { useAppTheme } from '../../constants/ThemeContext';
 
+const iconMap: Record<string, string> = {
+  ChartBar: 'chart-bar',
+  Calendar: 'calendar',
+  List: 'format-list-bulleted',
+  User: 'account-outline',
+};
+
 const TABS = [
-  { name: 'stats', icon: 'bar-chart' as const, label: 'الإحصائيات' },
-  { name: 'plans', icon: 'calendar' as const, label: 'الخطط' },
-  { name: 'index', icon: 'list' as const, label: 'المهام' },
-  { name: 'profile', icon: 'person' as const, label: 'الحساب' },
+  { name: 'stats', icon: 'ChartBar', label: 'الإحصائيات' },
+  { name: 'plans', icon: 'Calendar', label: 'الخطط' },
+  { name: 'index', icon: 'List', label: 'المهام' },
+  { name: 'profile', icon: 'User', label: 'الحساب' },
 ];
 
 function HeaderTitle({ title }: { title: string }) {
@@ -19,7 +26,8 @@ function HeaderTitle({ title }: { title: string }) {
 }
 
 function MyTabBar({ state, navigation }: any) {
-   return (
+  const { theme: THEME } = useAppTheme();
+  return (
      <View style={{
        position: 'absolute', bottom: 0, left: 0, right: 0,
        backgroundColor: '#E65A2A', borderTopLeftRadius: 24, borderTopRightRadius: 24, height: Platform.OS === 'ios' ? 75 : 65,
@@ -34,8 +42,8 @@ function MyTabBar({ state, navigation }: any) {
         if (!tab) return null;
         return (
           <TouchableOpacity key={route.name} onPress={() => navigation.navigate(route.name)} activeOpacity={0.7}
-            style={{ flex: 1, marginHorizontal: 6, borderRadius: 14, alignItems: 'center', justifyContent: 'center', paddingVertical: 6, backgroundColor: focused ? '#FFFFFF' : 'transparent' }}>
-            <Ionicons name={tab.icon} size={20} color={focused ? '#E65A2A' : 'rgba(255,255,255,0.55)'} />
+            style={{ flex: 1, marginHorizontal: 6, borderRadius: 14, alignItems: 'center', justifyContent: 'center', paddingVertical: 6, backgroundColor: focused ? THEME.secondaryBackground : 'transparent' }}>
+            <MaterialCommunityIcons name={iconMap[tab.icon]} size={20} color={focused ? '#E65A2A' : 'rgba(255,255,255,0.55)'} />
             <Text style={{ fontSize: 10, fontFamily: Typography.fonts.medium, color: focused ? '#E65A2A' : 'rgba(255,255,255,0.55)', marginTop: 2 }}>{tab.label}</Text>
           </TouchableOpacity>
         );
@@ -51,7 +59,7 @@ export default function TabLayout() {
       tabBar={(props) => <MyTabBar {...props} />}
       screenOptions={{
         headerStyle: {
-          backgroundColor: 'rgba(216, 67, 21, 0.88)',
+          backgroundColor: '#E65A2A',
           elevation: 4,
           shadowColor: 'rgba(216, 67, 21, 0.15)',
           shadowOffset: { width: 0, height: 2 },

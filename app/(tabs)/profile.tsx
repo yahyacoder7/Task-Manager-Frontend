@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getItem, deleteItem, saveItem } from '../../utils/storage';
 import { formatDateArabic } from '../../utils/date';
 import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -147,7 +147,7 @@ export default function ProfileScreen() {
         
         <View style={styles.themeToggleRow}>
           <TouchableOpacity onPress={toggleTheme} style={styles.themeToggleBtn}>
-            <Ionicons name={isDark ? 'moon-outline' : 'sunny-outline'} size={20} color={THEME.text} />
+            <MaterialCommunityIcons name={isDark ? "weather-night" : "weather-sunny"} size={20} color={THEME.text} />
             <Text style={[styles.themeToggleText, { color: THEME.secondaryText }]}>{isDark ? 'داكن' : 'فاتح'}</Text>
           </TouchableOpacity>
         </View>
@@ -182,30 +182,26 @@ export default function ProfileScreen() {
           </GlassCard>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>إعدادات الحساب</Text>
+            <Text style={styles.sectionTitle}>بيانات الحساب</Text>
 
             <TouchableOpacity style={styles.actionButton} onPress={handleUpdateName}>
               <View style={styles.actionIconContainer}>
-                <Ionicons name="person-outline" size={22} color={THEME.brand} />
+                <MaterialCommunityIcons name="account-outline" size={22} color={THEME.brand} />
               </View>
               <Text style={styles.actionText}>تعديل البيانات الشخصية</Text>
-              <Ionicons name="chevron-back" size={20} color={THEME.secondaryText} />
+              <MaterialCommunityIcons name="chevron-left" size={20} color={THEME.secondaryText} />
             </TouchableOpacity>
+          </View>
 
-            <TouchableOpacity style={styles.actionButton}>
-              <View style={styles.actionIconContainer}>
-                <Ionicons name="lock-closed-outline" size={22} color={THEME.brand} />
-              </View>
-              <Text style={styles.actionText}>تغيير كلمة المرور</Text>
-              <Ionicons name="chevron-back" size={20} color={THEME.secondaryText} />
-            </TouchableOpacity>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>الإعدادات</Text>
 
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/settings')}>
               <View style={styles.actionIconContainer}>
-                <Ionicons name="notifications-outline" size={22} color={THEME.brand} />
+                <MaterialCommunityIcons name="cog-outline" size={22} color={THEME.brand} />
               </View>
-              <Text style={styles.actionText}>تنبيهات المهام</Text>
-              <Ionicons name="chevron-back" size={20} color={THEME.secondaryText} />
+              <Text style={styles.actionText}>الإعدادات</Text>
+              <MaterialCommunityIcons name="chevron-left" size={20} color={THEME.secondaryText} />
             </TouchableOpacity>
           </View>
 
@@ -213,31 +209,32 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>نظرة سريعة</Text>
             <View style={styles.statsRow}>
               <GlassCard style={styles.statBox}>
-                <Ionicons name="checkmark-done-circle" size={28} color={THEME.success} />
+                <MaterialCommunityIcons name="check-circle" size={28} color={THEME.success} />
                 <Text style={styles.statValue}>{stats.completed}</Text>
                 <Text style={styles.statLabel}>مهمة مكتملة</Text>
               </GlassCard>
               <GlassCard style={styles.statBox}>
-                <Ionicons name="time-outline" size={28} color={THEME.warning} />
+                <MaterialCommunityIcons name="clock-outline" size={28} color={THEME.warning} />
                 <Text style={styles.statValue}>{stats.incomplete}</Text>
                 <Text style={styles.statLabel}>مهام قيد العمل</Text>
               </GlassCard>
             </View>
           </View>
 
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color={THEME.danger} />
-          <Text style={styles.logoutText}>تسجيل الخروج</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.versionText}>Task Flow v1.0.0</Text>
+        <View style={styles.logoutSection}>
+          <View style={styles.logoutDivider} />
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={16} color={THEME.secondaryText} />
+            <Text style={styles.logoutText}>تسجيل الخروج</Text>
+          </TouchableOpacity>
+          <Text style={styles.versionText}>Task Flow v1.0.0</Text>
+        </View>
       </ScrollView>
 
       {/* Toast Message */}
       {showToast && (
         <Animated.View style={[styles.toastContainer, { opacity: toastOpacity }]}>
-          <Ionicons name="checkmark-circle" size={20} color={THEME.white} />
+          <MaterialCommunityIcons name="check-circle" size={20} color={THEME.white} />
           <Text style={styles.toastText}>تم تحديث الاسم بنجاح</Text>
         </Animated.View>
       )}
@@ -398,6 +395,12 @@ function createStyles(THEME: any) {
     textAlign: 'right',
     fontFamily: Typography.fonts.medium,
   },
+  actionHint: {
+    fontSize: 12,
+    color: THEME.secondaryText,
+    fontFamily: Typography.fonts.regular,
+    marginLeft: 8,
+  },
   statsRow: {
     flexDirection: 'row',
     gap: 15,
@@ -421,28 +424,33 @@ function createStyles(THEME: any) {
     marginTop: 2,
     fontFamily: Typography.fonts.regular,
   },
+  logoutSection: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  logoutDivider: {
+    width: 60,
+    height: 1,
+    backgroundColor: THEME.divider,
+    marginBottom: 16,
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    backgroundColor: THEME.dangerBg,
-    borderWidth: 1,
-    borderColor: THEME.danger,
-    borderRadius: 16,
-    marginBottom: 20,
-    gap: 10,
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
   logoutText: {
-    color: THEME.danger,
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: Typography.fonts.bold,
+    color: THEME.secondaryText,
+    fontSize: 13,
+    fontFamily: Typography.fonts.medium,
   },
   versionText: {
     textAlign: 'center',
-    fontSize: 12,
-    color: THEME.secondaryText,
+    fontSize: 11,
+    color: THEME.divider,
+    marginTop: 8,
     marginBottom: 20,
     fontFamily: Typography.fonts.regular,
   },

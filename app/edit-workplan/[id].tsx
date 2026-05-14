@@ -4,7 +4,7 @@ import {
   ScrollView, SafeAreaView, KeyboardAvoidingView,
   Platform, ActivityIndicator, Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { getItem } from '../../utils/storage';
 import { Typography } from '../../constants/Typography';
@@ -116,7 +116,7 @@ export default function EditWorkplanScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerTitle: 'تعديل خطة العمل', headerTitleStyle: { color: '#FFFFFF', fontFamily: Typography.fonts.bold }, headerStyle: { backgroundColor: 'rgba(216, 67, 21, 0.88)' }, headerTintColor: '#FFFFFF' }} />
+      <Stack.Screen options={{ headerTitle: 'تعديل خطة العمل', headerTitleStyle: { color: '#FFFFFF', fontFamily: Typography.fonts.bold }, headerStyle: { backgroundColor: '#E65A2A' }, headerTintColor: '#FFFFFF' }} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <Text style={styles.label}>الاسم</Text>
@@ -132,15 +132,15 @@ export default function EditWorkplanScreen() {
             selectedTodos.map((todo: any, idx: number) => (
               <View key={todo.todoId} style={styles.todoRow}>
                 <TouchableOpacity onPress={() => toggleTodo(todo.todoId)} style={styles.removeBtn}>
-                  <Ionicons name="close-circle" size={22} color={THEME.danger} />
+                  <MaterialCommunityIcons name="close-circle" size={22} color={THEME.danger} />
                 </TouchableOpacity>
                 <Text style={styles.todoTitle} numberOfLines={1}>{todo.title}</Text>
                 <Text style={styles.orderBadge}>{idx + 1}</Text>
                 <TouchableOpacity onPress={() => moveUp(idx)} disabled={idx === 0}>
-                  <Ionicons name="chevron-up" size={20} color={idx === 0 ? THEME.disabledText : THEME.text} />
+                  <MaterialCommunityIcons name="chevron-up" size={20} color={idx === 0 ? THEME.disabledText : THEME.text} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => moveDown(idx)} disabled={idx >= selectedIds.length - 1}>
-                  <Ionicons name="chevron-down" size={20} color={idx >= selectedIds.length - 1 ? THEME.disabledText : THEME.text} />
+                  <MaterialCommunityIcons name="chevron-down" size={20} color={idx >= selectedIds.length - 1 ? THEME.disabledText : THEME.text} />
                 </TouchableOpacity>
               </View>
             ))
@@ -151,7 +151,7 @@ export default function EditWorkplanScreen() {
               <Text style={styles.sectionTitle}>المهام المتاحة</Text>
               {unselectedTodos.map((todo: any) => (
                 <TouchableOpacity key={todo.todoId} style={styles.todoRow} onPress={() => toggleTodo(todo.todoId)}>
-                  <Ionicons name="add-circle-outline" size={22} color={THEME.brand} />
+                  <MaterialCommunityIcons name="plus-circle" size={22} color={THEME.brand} />
                   <Text style={styles.todoTitle} numberOfLines={1}>{todo.title}</Text>
                   {todo.category && (
                     <View style={styles.catBadge}><Text style={styles.catText}>{todo.category.name}</Text></View>
@@ -163,7 +163,7 @@ export default function EditWorkplanScreen() {
 
           <TouchableOpacity style={[styles.saveBtn, isSaving && { opacity: 0.6 }]} onPress={handleSave} disabled={isSaving}>
             {isSaving ? <ActivityIndicator color={THEME.white} /> : (
-              <><Ionicons name="checkmark-circle" size={22} color={THEME.white} /><Text style={styles.saveText}>حفظ التغييرات</Text></>
+              <><MaterialCommunityIcons name="check-circle" size={22} color={THEME.white} /><Text style={styles.saveText}>حفظ التغييرات</Text></>
             )}
           </TouchableOpacity>
         </ScrollView>

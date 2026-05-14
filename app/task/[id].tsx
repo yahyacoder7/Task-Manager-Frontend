@@ -4,7 +4,7 @@ import {
   SafeAreaView, ActivityIndicator, Alert, Modal, Pressable
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { getItem } from '../../utils/storage';
@@ -157,17 +157,17 @@ export default function TaskDetailsScreen() {
       />
       <Stack.Screen options={{
         headerTitle: '',
-        headerStyle: { backgroundColor: 'rgba(216, 67, 21, 0.88)' },
+        headerStyle: { backgroundColor: '#E65A2A' },
         headerShadowVisible: false,
         headerRight: () => (
           <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
             <Text style={styles.headerTitle}>تفاصيل المهمة</Text>
-            <Ionicons name="arrow-forward" size={24} color={THEME.white} />
+            <MaterialCommunityIcons name="arrow-right" size={24} color={THEME.white} />
           </TouchableOpacity>
         ),
         headerLeft: () => (
           <TouchableOpacity onPress={showTaskOptions} style={styles.optionsBtn}>
-            <Ionicons name="ellipsis-vertical-outline" size={24} color={THEME.white} />
+            <MaterialCommunityIcons name="dots-vertical" size={24} color={THEME.white} />
           </TouchableOpacity>
         ),
       }} />
@@ -178,7 +178,7 @@ export default function TaskDetailsScreen() {
         <View style={styles.mainCard}>
           {/* Status Badge */}
           <View style={[styles.statusBadge, completed && styles.statusBadgeDone]}>
-            <Ionicons name={completed ? "checkmark-circle" : "time"} size={16} color={THEME.brand} />
+            <MaterialCommunityIcons name={completed ? "check-circle" : "clock-outline"} size={16} color={THEME.brand} />
             <Text style={[styles.statusText, { color: THEME.brand }]}>
               {completed ? 'مهمة مكتملة' : 'قيد الانتظار'}
             </Text>
@@ -195,7 +195,7 @@ export default function TaskDetailsScreen() {
           <View style={styles.adviceCard}>
             <View style={styles.adviceRow}>
               <View style={styles.adviceIconBox}>
-                <Ionicons name="bulb" size={16} color={THEME.brand} />
+                <MaterialCommunityIcons name="lightbulb-outline" size={16} color={THEME.brand} />
               </View>
               <Text style={styles.adviceTitle}>نصيحة لمهمتك</Text>
             </View>
@@ -209,7 +209,7 @@ export default function TaskDetailsScreen() {
           {task.workplan && (
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
-                <Ionicons name="briefcase-outline" size={20} color={THEME.secondaryText} />
+                <MaterialCommunityIcons name="briefcase-outline" size={20} color={THEME.secondaryText} />
                 <Text style={styles.detailLabel}>خطة العمل</Text>
               </View>
               <Text style={styles.detailValue}>{task.workplan.name}</Text>
@@ -219,7 +219,7 @@ export default function TaskDetailsScreen() {
           {task.category && (
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
-                <Ionicons name="folder-open-outline" size={20} color={THEME.secondaryText} />
+                <MaterialCommunityIcons name="folder-open-outline" size={20} color={THEME.secondaryText} />
                 <Text style={styles.detailLabel}>التصنيف</Text>
               </View>
               <Text style={styles.detailValue}>{task.category.name}</Text>
@@ -229,7 +229,7 @@ export default function TaskDetailsScreen() {
           {task.repeatUnit && (
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
-                <Ionicons name="repeat" size={20} color={THEME.secondaryText} />
+                <MaterialCommunityIcons name="repeat" size={20} color={THEME.secondaryText} />
                 <Text style={styles.detailLabel}>التكرار</Text>
               </View>
               <View style={styles.repeatBadge}>
@@ -241,7 +241,7 @@ export default function TaskDetailsScreen() {
           {task.startDate && (
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
-                <Ionicons name="calendar-outline" size={20} color={THEME.secondaryText} />
+                <MaterialCommunityIcons name="calendar-outline" size={20} color={THEME.secondaryText} />
                 <Text style={styles.detailLabel}>تاريخ البدء</Text>
               </View>
               <Text style={styles.detailValue} numberOfLines={2}>
@@ -253,7 +253,7 @@ export default function TaskDetailsScreen() {
           {task.expectedTime && (
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
-                <Ionicons name="partly-sunny-outline" size={20} color={THEME.secondaryText} />
+                <MaterialCommunityIcons name="weather-partly-cloudy" size={20} color={THEME.secondaryText} />
                 <Text style={styles.detailLabel}>الوقت التقريبي</Text>
               </View>
               <Text style={styles.detailValue}>{EXPECTED_TIME_AR[task.expectedTime]}</Text>
@@ -262,7 +262,7 @@ export default function TaskDetailsScreen() {
 
           <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
             <View style={styles.detailLeft}>
-              <Ionicons name="add-circle-outline" size={20} color={THEME.secondaryText} />
+              <MaterialCommunityIcons name="plus-circle" size={20} color={THEME.secondaryText} />
               <Text style={styles.detailLabel}>تاريخ الإنشاء</Text>
             </View>
             <Text style={[styles.detailValue, { fontSize: 12 }]} numberOfLines={1}>
@@ -285,7 +285,7 @@ export default function TaskDetailsScreen() {
                 </View>
                 <Text style={styles.accordionTitle}>سجلات الإكمال</Text>
               </View>
-              <Ionicons name={logsOpen ? "chevron-up" : "chevron-down"} size={20} color={THEME.text} />
+              <MaterialCommunityIcons name={logsOpen ? "chevron-up" : "chevron-down"} size={20} color={THEME.text} />
             </TouchableOpacity>
 
             {logsOpen && (
@@ -315,7 +315,7 @@ export default function TaskDetailsScreen() {
             <ActivityIndicator color={THEME.white} />
           ) : (
             <>
-              <Ionicons name={completed ? "checkmark-done" : "checkmark"} size={22} color={completed ? THEME.brand : THEME.white} />
+              {completed ? <MaterialCommunityIcons name="check-circle" size={22} color={THEME.brand} /> : <MaterialCommunityIcons name="check" size={22} color={THEME.white} />}
               <Text style={[styles.completeBtnText, completed && { color: THEME.brand }]}>
                 {completed ? 'تم إنجاز المهمة' : 'إكمال المهمة'}
               </Text>
@@ -331,7 +331,7 @@ export default function TaskDetailsScreen() {
             <View style={styles.modalHdr}>
               <Text style={styles.modalTitle}>خيارات المهمة</Text>
               <TouchableOpacity onPress={() => setOptionsModalVisible(false)}>
-                <Ionicons name="close" size={22} color={THEME.text} />
+                <MaterialCommunityIcons name="close" size={22} color={THEME.text} />
               </TouchableOpacity>
             </View>
             
@@ -343,7 +343,7 @@ export default function TaskDetailsScreen() {
               }}
             >
               <View style={[styles.modalActionIcon, { backgroundColor: 'rgba(216,67,21,0.1)' }]}>
-                <Ionicons name="document-text-outline" size={20} color={THEME.brand} />
+                <MaterialCommunityIcons name="file-document-outline" size={20} color={THEME.brand} />
               </View>
               <View style={styles.modalActionContent}>
                 <Text style={styles.modalActionText}>تعديل المهمة</Text>
@@ -361,7 +361,7 @@ export default function TaskDetailsScreen() {
               }}
             >
               <View style={[styles.modalActionIcon, { backgroundColor: 'rgba(255,59,48,0.1)' }]}>
-                <Ionicons name="trash-outline" size={20} color={THEME.danger} />
+                <MaterialCommunityIcons name="delete-outline" size={20} color={THEME.danger} />
               </View>
               <View style={styles.modalActionContent}>
                 <Text style={[styles.modalActionText, { color: THEME.danger }]}>حذف المهمة</Text>
@@ -377,7 +377,7 @@ export default function TaskDetailsScreen() {
         <Pressable style={styles.overlay} onPress={() => setConfirmDeleteVisible(false)}>
           <View style={styles.confirmModalBox}>
             <View style={styles.confirmIconCircle}>
-              <Ionicons name="warning" size={40} color={THEME.danger} />
+              <MaterialCommunityIcons name="alert-outline" size={40} color={THEME.danger} />
             </View>
             <Text style={styles.confirmTitle}>حذف المهمة</Text>
             <Text style={styles.confirmMessage}>
@@ -394,7 +394,7 @@ export default function TaskDetailsScreen() {
                 style={styles.deleteBtn} 
                 onPress={performDelete}
               >
-                <Ionicons name="trash-outline" size={18} color={THEME.white} />
+                <MaterialCommunityIcons name="delete-outline" size={18} color={THEME.white} />
                 <Text style={styles.deleteBtnText}>حذف</Text>
               </TouchableOpacity>
             </View>

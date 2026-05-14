@@ -1,10 +1,10 @@
-import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   ScrollView, SafeAreaView, ActivityIndicator, RefreshControl, TextInput,
   Modal, Pressable, Animated,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -101,7 +101,7 @@ function TaskCard({ task }: { task: any }) {
             </View>
           )}
           <View style={[styles.statusBadge, isEffectivelyCompleted && styles.statusBadgeDone]}>
-            <Ionicons name={isEffectivelyCompleted ? "checkmark-circle" : "time"} size={14} color={THEME.brand} />
+            {isEffectivelyCompleted ? <MaterialCommunityIcons name="check-circle" size={14} color={THEME.brand} /> : <MaterialCommunityIcons name="clock-outline" size={14} color={THEME.brand} />}
             <Text style={[styles.statusText, { color: THEME.brand }]}>
               {isEffectivelyCompleted ? 'مكتملة' : 'قيد الانتظار'}
             </Text>
@@ -125,8 +125,6 @@ export default function TasksScreen() {
   const [error, setError]         = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [catFiltering, setCatFiltering] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
-  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const { theme: THEME } = useAppTheme();
   const styles = useMemo(() => createStyles(THEME), [THEME]);
@@ -196,7 +194,7 @@ export default function TasksScreen() {
       />
       {/* Search */}
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={18} color={THEME.secondaryText} />
+        <MaterialCommunityIcons name="magnify" size={18} color={THEME.secondaryText} />
         <TextInput
           style={styles.searchInput}
           placeholder="ابحث عن مهمة..."
@@ -205,20 +203,22 @@ export default function TasksScreen() {
           onChangeText={setSearchQuery}
         />
         {searchQuery ? (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={18} color={THEME.secondaryText} />
+          <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.searchClearBtn}>
+            <MaterialCommunityIcons name="close-circle" size={20} color={THEME.secondaryText} />
           </TouchableOpacity>
         ) : null}
       </View>
       {/* Category Filter */}
       <View style={styles.filterContainer}>
+        <View style={{ flex: 1 }} />
         <TouchableOpacity style={styles.catDropdown} onPress={() => setCatFiltering(true)}>
-          <Ionicons name="folder-outline" size={16} color={THEME.text} />
+          <MaterialCommunityIcons name="folder-outline" size={16} color={THEME.text} />
           <Text style={styles.catDropdownText}>
             {selectedCategory ? categories.find(c => c.categoryId === selectedCategory)?.name || 'الكل' : 'الكل'}
           </Text>
-          <Ionicons name="chevron-down" size={16} color={THEME.secondaryText} />
+          <MaterialCommunityIcons name="chevron-down" size={16} color={THEME.secondaryText} />
         </TouchableOpacity>
+        <Text style={styles.filterLabel}>فلتر:</Text>
       </View>
 
       <Modal visible={catFiltering} transparent animationType="fade" onRequestClose={() => setCatFiltering(false)}>
@@ -227,19 +227,19 @@ export default function TasksScreen() {
             <View style={styles.catDropdownHdr}>
               <Text style={styles.catDropdownTitle}>اختر تصنيف</Text>
               <TouchableOpacity onPress={() => setCatFiltering(false)}>
-                <Ionicons name="close" size={22} color={THEME.text} />
+                <MaterialCommunityIcons name="close" size={22} color={THEME.text} />
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.catDropdownOption} onPress={() => { setSelectedCategory(null); setCatFiltering(false); }}>
-              <Ionicons name="apps-outline" size={18} color={THEME.brand} />
+              <MaterialCommunityIcons name="grid" size={18} color={THEME.brand} />
               <Text style={styles.catDropdownOptText}>الكل</Text>
-              {selectedCategory === null && <Ionicons name="checkmark-circle" size={18} color={THEME.brand} style={{ marginLeft: 'auto' }} />}
+              {selectedCategory === null && <MaterialCommunityIcons name="check-circle" size={18} color={THEME.brand} style={{ marginLeft: 'auto' }} />}
             </TouchableOpacity>
             {categories.map(cat => (
               <TouchableOpacity key={cat.categoryId} style={styles.catDropdownOption} onPress={() => { setSelectedCategory(cat.categoryId); setCatFiltering(false); }}>
-                <Ionicons name="folder-outline" size={18} color={THEME.brand} />
+                <MaterialCommunityIcons name="folder-outline" size={18} color={THEME.brand} />
                 <Text style={styles.catDropdownOptText}>{cat.name}</Text>
-                {selectedCategory === cat.categoryId && <Ionicons name="checkmark-circle" size={18} color={THEME.brand} style={{ marginLeft: 'auto' }} />}
+                {selectedCategory === cat.categoryId && <MaterialCommunityIcons name="check-circle" size={18} color={THEME.brand} style={{ marginLeft: 'auto' }} />}
               </TouchableOpacity>
             ))}
           </Pressable>
@@ -252,7 +252,7 @@ export default function TasksScreen() {
         </View>
       ) : error ? (
         <View style={styles.center}>
-          <Ionicons name="cloud-offline-outline" size={60} color={THEME.muted} />
+          <MaterialCommunityIcons name="cloud-off-outline" size={60} color={THEME.muted} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => fetchTasks()}>
             <Text style={styles.retryText}>إعادة المحاولة</Text>
@@ -260,11 +260,8 @@ export default function TasksScreen() {
         </View>
       ) : (
         <ScrollView
-          ref={scrollRef}
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
-          onScroll={(e) => setShowScrollTop(e.nativeEvent.contentOffset.y > 200)}
-          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
@@ -275,13 +272,13 @@ export default function TasksScreen() {
         >
           {tasks.length === 0 && !searchQuery ? (
             <View style={styles.center}>
-              <Ionicons name="clipboard-outline" size={72} color={THEME.muted} />
+              <MaterialCommunityIcons name="clipboard-text-outline" size={72} color={THEME.muted} />
               <Text style={styles.emptyTitle}>لا توجد مهام بعد</Text>
               <Text style={styles.emptySubtitle}>اضغط + لإضافة أولى مهامك</Text>
             </View>
           ) : searchQuery && pending.length === 0 && completed.length === 0 ? (
             <View style={styles.center}>
-              <Ionicons name="search-outline" size={72} color={THEME.muted} />
+              <MaterialCommunityIcons name="magnify" size={72} color={THEME.muted} />
               <Text style={styles.emptyTitle}>لا توجد نتائج</Text>
               <Text style={styles.emptySubtitle}>لا توجد مهام تطابق بحث "{searchQuery}"</Text>
             </View>
@@ -321,18 +318,9 @@ export default function TasksScreen() {
         onPress={() => router.push('/add-todo')}
         activeOpacity={0.85}
       >
-        <Ionicons name="add" size={32} color={THEME.white} />
+        <MaterialCommunityIcons name="plus" size={32} color={THEME.white} />
       </TouchableOpacity>
 
-      {showScrollTop && (
-        <TouchableOpacity
-          style={styles.scrollTopBtn}
-          onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="arrow-up" size={22} color={THEME.white} />
-        </TouchableOpacity>
-      )}
     </SafeAreaView>
   );
 }
@@ -348,18 +336,22 @@ function createStyles(THEME: any) {
   filterContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 10,
+    paddingVertical: 6,
+    gap: 8,
     alignItems: 'center',
   },
+  filterLabel: {
+    color: THEME.secondaryText,
+    fontSize: 13,
+    fontFamily: Typography.fonts.medium,
+  },
   catDropdown: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: THEME.inputBg,
     borderRadius: 10,
     paddingHorizontal: 12,
-    height: 40,
+    height: 36,
     borderWidth: 1,
     borderColor: THEME.divider,
     gap: 6,
@@ -413,15 +405,20 @@ function createStyles(THEME: any) {
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME.inputBg,
+    backgroundColor: THEME.card,
     marginHorizontal: 16,
-    marginVertical: 10,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 42,
+    marginVertical: 12,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 50,
     borderWidth: 1,
     borderColor: THEME.divider,
-    gap: 8,
+    gap: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
   },
   searchInput: {
     flex: 1,
@@ -431,6 +428,7 @@ function createStyles(THEME: any) {
     textAlign: 'right',
     outlineStyle: 'none' as any,
   },
+  searchClearBtn: { padding: 6 },
   filterScroll: {
     paddingHorizontal: 16,
     gap: 8,
@@ -491,7 +489,7 @@ function createStyles(THEME: any) {
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#292929',
+    borderColor: THEME.divider,
     gap: 10,
     shadowColor: THEME.black,
     shadowOffset: { width: 0, height: 2 },
@@ -651,20 +649,7 @@ function createStyles(THEME: any) {
   },
 
   // FAB
-scrollTopBtn: {
-     position: 'absolute',
-     bottom: 115,
-     right: 30,
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(216, 67, 21, 0.88)',
-    justifyContent: 'center', alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-  },
-fab: {
+  fab: {
      position: 'absolute',
      bottom: 76,
      right: 24,

@@ -15,6 +15,7 @@ import {
   Rubik_700Bold 
 } from '@expo-google-fonts/rubik';
 import { I18nManager } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Force RTL globally for Arabic support
 try {
@@ -67,9 +68,11 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <AppThemeProvider>
-      <NavContent />
-    </AppThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppThemeProvider>
+        <NavContent />
+      </AppThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 

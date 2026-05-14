@@ -4,7 +4,7 @@ import {
   SafeAreaView, ActivityIndicator, Alert, Modal, Pressable,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { getItem } from '../../utils/storage';
 import { isToday } from '../../utils/date';
@@ -110,28 +110,15 @@ export default function WorkplanDetailScreen() {
     ]);
   };
 
-  const handleReorder = async (todoIds: number[]) => {
+  const handleComplete = async (todoId: number) => {
     try {
       const token = await getItem('userToken');
-      const res = await fetch(`${BASE_URL}/work-plan/reorder/${id}`, {
+      await fetch(`${BASE_URL}/todo/complete/${todoId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ todoIds }),
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) {
-        await fetchWorkplan();
-      }
+      await fetchWorkplan();
     } catch {}
-  };
-
-  const moveItem = (index: number, direction: -1 | 1) => {
-    if (!workplan?.todo) return;
-    const todos = [...workplan.todo];
-    const target = index + direction;
-    if (target < 0 || target >= todos.length) return;
-    [todos[index], todos[target]] = [todos[target], todos[index]];
-    setWorkplan({ ...workplan, todo: todos });
-    handleReorder(todos.map(t => t.todoId));
   };
 
   if (isLoading || !workplan) {
@@ -149,17 +136,17 @@ export default function WorkplanDetailScreen() {
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{
         headerTitle: '',
-        headerStyle: { backgroundColor: 'rgba(216, 67, 21, 0.88)' },
+        headerStyle: { backgroundColor: '#E65A2A' },
         headerShadowVisible: false,
         headerRight: () => (
           <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
             <Text style={styles.headerTitle}>تفاصيل الخطة</Text>
-            <Ionicons name="arrow-forward" size={24} color={THEME.white} />
+            <MaterialCommunityIcons name="arrow-right" size={24} color={THEME.white} />
           </TouchableOpacity>
         ),
         headerLeft: () => (
           <TouchableOpacity onPress={() => setOptionsVisible(true)} style={styles.optionsBtn}>
-            <Ionicons name="ellipsis-vertical" size={22} color={THEME.white} />
+            <MaterialCommunityIcons name="dots-vertical" size={22} color={THEME.white} />
           </TouchableOpacity>
         ),
       }} />
@@ -181,41 +168,44 @@ export default function WorkplanDetailScreen() {
 
         {(!todo || todo.length === 0) && (
           <View style={styles.emptyBox}>
-            <Ionicons name="document-text-outline" size={40} color={THEME.muted} />
+            <MaterialCommunityIcons name="file-document-outline" size={40} color={THEME.muted} />
             <Text style={styles.emptyText}>لا توجد مهام في هذه الخطة</Text>
           </View>
         )}
 
         {todo?.map((t: any, idx: number) => (
-          <TouchableOpacity key={t.todoId} style={[styles.todoCard, isTodoCompleted(t) && styles.todoCardDone]} onPress={() => router.push({ pathname: '/task/[id]', params: { id: t.todoId.toString() } } as any)} activeOpacity={0.7}>
-            <View style={styles.todoInfo}>
-              <View style={styles.todoHeaderRow}>
-                {t.category && (
-                  <View style={styles.catBadge}>
-                    <Text style={styles.catText}>{t.category.name}</Text>
-                  </View>
+          <View key={t.todoId} style={styles.todoWrapper}>
+            <View style={styles.timelineCol}>
+              <View style={[styles.timelineCircle, isTodoCompleted(t) && styles.timelineCircleDone]}>
+                {isTodoCompleted(t) ? (
+                  <MaterialCommunityIcons name="check" size={18} color={THEME.white} />
+                ) : (
+                  <Text style={styles.timelineNum}>{idx + 1}</Text>
                 )}
-                {isTodoCompleted(t) && (
-                  <Ionicons name="checkmark-circle" size={18} color={THEME.success} />
-                )}
-                <Text style={[styles.todoTitle, isTodoCompleted(t) && styles.todoTitleDone]}>{t.title}</Text>
               </View>
-              {t.description ? (
-                <Text style={styles.todoDesc} numberOfLines={2}>{t.description}</Text>
-              ) : null}
+              {idx < todo.length - 1 && <View style={styles.timelineLine} />}
             </View>
-
-            <View style={styles.reorderGroup}>
-              <TouchableOpacity onPress={() => moveItem(idx, -1)} disabled={idx === 0}>
-                <Ionicons name="chevron-up" size={18} color={idx === 0 ? THEME.disabledText : THEME.text} />
-              </TouchableOpacity>
-              <Text style={styles.orderNum}>{idx + 1}</Text>
-              <TouchableOpacity onPress={() => moveItem(idx, 1)} disabled={idx >= todo.length - 1}>
-                <Ionicons name="chevron-down" size={18} color={idx >= todo.length - 1 ? THEME.disabledText : THEME.text} />
+            <View style={[styles.todoCard, isTodoCompleted(t) && styles.todoCardDone]}>
+              <View style={styles.todoInfo}>
+                <View style={styles.todoHeaderRow}>
+                  {t.category && (
+                    <View style={styles.catBadge}>
+                      <Text style={styles.catText}>{t.category.name}</Text>
+                    </View>
+                  )}
+                  <Text style={[styles.todoTitle, isTodoCompleted(t) && styles.todoTitleDone]} numberOfLines={1}>{t.title}</Text>
+                </View>
+                {t.description ? (
+                  <Text style={styles.todoDesc} numberOfLines={2}>{t.description}</Text>
+                ) : null}
+              </View>
+              <TouchableOpacity onPress={() => handleComplete(t.todoId)} style={styles.completeBtn}>
+                <View style={[styles.completeCircle, isTodoCompleted(t) && styles.completeCircleDone]}>
+                  <MaterialCommunityIcons name={isTodoCompleted(t) ? 'check' : 'circle-outline'} size={isTodoCompleted(t) ? 18 : 20} color={isTodoCompleted(t) ? THEME.white : THEME.brand} />
+                </View>
               </TouchableOpacity>
             </View>
-
-          </TouchableOpacity>
+          </View>
         ))}
       </ScrollView>
 
@@ -228,7 +218,7 @@ export default function WorkplanDetailScreen() {
               setOptionsVisible(false);
               router.push({ pathname: '/edit-workplan/[id]', params: { id: id as string } } as any);
             }}>
-              <Ionicons name="pencil" size={20} color={THEME.brand} />
+              <MaterialCommunityIcons name="pencil" size={20} color={THEME.brand} />
               <Text style={styles.modalActionText}>تعديل خطة العمل</Text>
             </TouchableOpacity>
 
@@ -238,7 +228,7 @@ export default function WorkplanDetailScreen() {
               setOptionsVisible(false);
               setConfirmDeleteVisible(true);
             }}>
-              <Ionicons name="trash" size={20} color={THEME.danger} />
+              <MaterialCommunityIcons name="delete-outline" size={20} color={THEME.danger} />
               <Text style={[styles.modalActionText, { color: THEME.danger }]}>حذف خطة العمل</Text>
             </TouchableOpacity>
           </Pressable>
@@ -249,7 +239,7 @@ export default function WorkplanDetailScreen() {
         <Pressable style={styles.overlay} onPress={() => setConfirmDeleteVisible(false)}>
           <View style={styles.confirmModalBox}>
             <View style={styles.confirmIconCircle}>
-              <Ionicons name="warning" size={40} color={THEME.danger} />
+              <MaterialCommunityIcons name="alert-outline" size={40} color={THEME.danger} />
             </View>
             <Text style={styles.confirmTitle}>حذف خطة العمل</Text>
             <Text style={styles.confirmMessage}>هل أنت متأكد من حذف "{name}"؟ لا يمكن التراجع عن هذا الإجراء.</Text>
@@ -261,7 +251,7 @@ export default function WorkplanDetailScreen() {
                 {isDeleting ? (
                   <ActivityIndicator color={THEME.white} size="small" />
                 ) : (
-                  <><Ionicons name="trash-outline" size={18} color={THEME.white} /><Text style={styles.deleteBtnText}>حذف</Text></>
+                  <><MaterialCommunityIcons name="delete-outline" size={18} color={THEME.white} /><Text style={styles.deleteBtnText}>حذف</Text></>
                 )}
               </TouchableOpacity>
             </View>
@@ -295,7 +285,13 @@ function createStyles(THEME: any) {
   emptyBox: { alignItems: 'center', paddingVertical: 40 },
   emptyText: { color: THEME.disabledText, fontSize: 15, fontFamily: Typography.fonts.regular, marginTop: 12 },
 
-  todoCard: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: THEME.card, borderRadius: 14, padding: 12, marginBottom: 10, gap: 10, borderWidth: 1, borderColor: THEME.divider },
+  todoWrapper: { flexDirection: 'row', alignItems: 'stretch', marginBottom: 0, gap: 12 },
+  timelineCol: { width: 36, alignItems: 'center', paddingTop: 4 },
+  timelineCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: THEME.brand, justifyContent: 'center', alignItems: 'center', zIndex: 2 },
+  timelineCircleDone: { backgroundColor: THEME.success },
+  timelineNum: { color: THEME.white, fontSize: 13, fontFamily: Typography.fonts.bold },
+  timelineLine: { width: 2, flex: 1, backgroundColor: THEME.brand, opacity: 0.3, minHeight: 30, marginVertical: -2 },
+  todoCard: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: THEME.card, borderRadius: 14, padding: 12, marginBottom: 10, gap: 8, borderWidth: 1, borderColor: THEME.divider },
   todoCardDone: { opacity: 0.55 },
   todoInfo: { flex: 1 },
   todoHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -304,9 +300,9 @@ function createStyles(THEME: any) {
   todoDesc: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.regular, textAlign: 'right', marginTop: 8 },
   catBadge: { backgroundColor: THEME.muted, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
   catText: { color: THEME.secondaryText, fontSize: 11, fontFamily: Typography.fonts.medium },
-  reorderGroup: { alignItems: 'center', gap: 2, borderWidth: 1, borderColor: THEME.divider, borderRadius: 8, paddingVertical: 4, paddingHorizontal: 6 },
-  orderNum: { color: THEME.brand, fontSize: 12, fontFamily: Typography.fonts.bold, minWidth: 16, textAlign: 'center' },
-  removeTodoBtn: { padding: 6 },
+  completeBtn: { padding: 4 },
+  completeCircle: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, borderColor: THEME.brand, justifyContent: 'center', alignItems: 'center', backgroundColor: THEME.card, elevation: 4, shadowColor: THEME.brand, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4 },
+  completeCircleDone: { backgroundColor: THEME.success, borderColor: THEME.success },
 
   optionsBtn: { padding: 8 },
   overlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.65)' },

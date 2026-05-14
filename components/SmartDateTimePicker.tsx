@@ -8,7 +8,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity,
   Modal, Pressable, Platform, TextInput,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Typography } from '../constants/Typography';
 import { useAppTheme } from '../constants/ThemeContext';
 
@@ -52,7 +52,7 @@ function TimeSpinner({
     <View style={ts.col}>
       <Text style={ts.colLabel}>{label}</Text>
       <TouchableOpacity style={ts.arrow} onPress={onUp}>
-        <Ionicons name="chevron-up" size={20} color={THEME.brand} />
+        <MaterialCommunityIcons name="chevron-up" size={20} color={THEME.brand} />
       </TouchableOpacity>
       <TextInput
         style={[ts.valueInput, Platform.OS === 'web' && ({ outlineStyle: 'none' } as any)]}
@@ -64,7 +64,7 @@ function TimeSpinner({
         selectTextOnFocus
       />
       <TouchableOpacity style={ts.arrow} onPress={onDown}>
-        <Ionicons name="chevron-down" size={20} color={THEME.brand} />
+        <MaterialCommunityIcons name="chevron-down" size={20} color={THEME.brand} />
       </TouchableOpacity>
     </View>
   );
@@ -261,7 +261,7 @@ function WebPicker({ value, onConfirm, onCancel }: {
               disabled={!dateStr}
               onPress={() => setStep('time')}
             >
-              <Ionicons name="checkmark-outline" size={18} color={THEME.brand} />
+              <MaterialCommunityIcons name="check" size={18} color={THEME.brand} />
               <Text style={wp.confirmBtnText}>التالي</Text>
             </TouchableOpacity>
           </>
@@ -271,7 +271,7 @@ function WebPicker({ value, onConfirm, onCancel }: {
               <Text style={wp.btnText}>→ رجوع</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[wp.btn, wp.confirmBtn]} onPress={handleConfirm}>
-              <Ionicons name="checkmark-outline" size={18} color={THEME.brand} />
+              <MaterialCommunityIcons name="check" size={18} color={THEME.brand} />
               <Text style={wp.confirmBtnText}>تأكيد</Text>
             </TouchableOpacity>
           </>
@@ -352,16 +352,16 @@ export default function SmartDateTimePicker({ value, onChange, disabled }: Props
         onPress={openPicker}
         disabled={disabled}
       >
-        <Ionicons name="calendar-outline" size={20} color={disabled ? THEME.disabledText : THEME.brand} />
+        <MaterialCommunityIcons name="calendar-outline" size={20} color={disabled ? THEME.disabledText : THEME.brand} />
         <Text style={[s.triggerText, disabled && { color: THEME.disabledText }]} numberOfLines={1}>
           {display || 'اضغط لاختيار التاريخ والوقت'}
         </Text>
         {value ? (
           <TouchableOpacity onPress={() => !disabled && onChange('')} hitSlop={8}>
-            <Ionicons name="close-circle" size={18} color="#FF5252" />
+            <MaterialCommunityIcons name="close-circle" size={18} color="#FF5252" />
           </TouchableOpacity>
         ) : (
-          <Ionicons name="chevron-down" size={16} color={disabled ? THEME.disabledText : THEME.secondaryText} />
+          <MaterialCommunityIcons name="chevron-down" size={16} color={disabled ? THEME.disabledText : THEME.secondaryText} />
         )}
       </TouchableOpacity>
 
@@ -388,7 +388,7 @@ export default function SmartDateTimePicker({ value, onChange, disabled }: Props
               <View style={{ flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <Text style={s.modalTitle}>اختر التاريخ والوقت</Text>
                 <TouchableOpacity onPress={() => setShowWeb(false)}>
-                  <Ionicons name="close" size={24} color={THEME.text} />
+                  <MaterialCommunityIcons name="close" size={24} color={THEME.text} />
                 </TouchableOpacity>
               </View>
               <WebPicker

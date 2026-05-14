@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { getItem, saveItem } from '../utils/storage';
 import { Typography } from '../constants/Typography';
@@ -66,7 +66,7 @@ export default function EditProfileScreen() {
       <Stack.Screen options={{ 
         headerShown: true, 
         headerTitle: "", // Disable default title
-        headerStyle: { backgroundColor: 'rgba(216, 67, 21, 0.88)' },
+        headerStyle: { backgroundColor: '#E65A2A' },
         headerShadowVisible: false,
         headerTintColor: '#FFFFFF',
         headerRight: () => ( 
@@ -83,7 +83,7 @@ export default function EditProfileScreen() {
               }}>
                 تعديل الملف الشخصي
               </Text>
-              <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
+              <MaterialCommunityIcons name="arrow-right" size={22} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         ),
@@ -97,7 +97,7 @@ export default function EditProfileScreen() {
         <View style={styles.form}>
           <Text style={styles.label}>الاسم الكامل</Text>
           <View style={styles.inputContainer}>
-            <Ionicons name="person-outline" size={20} color={THEME.secondaryText} style={styles.inputIcon} />
+            <MaterialCommunityIcons name="account-outline" size={20} color={THEME.secondaryText} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
               value={name}
@@ -116,13 +116,13 @@ export default function EditProfileScreen() {
             {isSaving ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <><Ionicons name="checkmark-circle" size={20} color={THEME.white} /><Text style={styles.updateButtonText}>حفظ التغييرات</Text></>
+              <><MaterialCommunityIcons name="check-circle" size={20} color={THEME.white} /><Text style={styles.updateButtonText}>حفظ التغييرات</Text></>
             )}
           </TouchableOpacity>
         </View>
 
         <View style={styles.infoBox}>
-          <Ionicons name="information-circle-outline" size={20} color={THEME.secondaryText} />
+          <MaterialCommunityIcons name="information-outline" size={20} color={THEME.secondaryText} />
           <Text style={styles.infoText}>
             الاسم الذي ستضعه هنا هو الذي سيظهر لزملائك في خطط العمل والمهام المشتركة.
           </Text>

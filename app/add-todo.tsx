@@ -4,7 +4,7 @@ import {
   ScrollView, SafeAreaView, KeyboardAvoidingView,
   Platform, ActivityIndicator, Alert, Modal, Pressable,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { getItem } from '../utils/storage';
 import { Typography } from '../constants/Typography';
@@ -181,12 +181,12 @@ export default function AddTodoScreen() {
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{
         headerShown: true, headerTitle: '',
-        headerStyle: { backgroundColor: 'rgba(216, 67, 21, 0.88)' },
+        headerStyle: { backgroundColor: '#E65A2A' },
         headerShadowVisible: false,
         headerRight: () => (
           <TouchableOpacity onPress={() => router.back()} style={styles.hdrRight}>
             <Text style={styles.hdrTitle}>إضافة مهمة جديدة</Text>
-            <Ionicons name="close" size={22} color={THEME.white} />
+            <MaterialCommunityIcons name="close" size={22} color={THEME.white} />
           </TouchableOpacity>
         ),
         headerLeft: () => null,
@@ -198,7 +198,7 @@ export default function AddTodoScreen() {
           {/* General error */}
           {fieldErrors.general ? (
             <View style={styles.errorBanner}>
-              <Ionicons name="alert-circle" size={18} color="#FF5252" />
+              <MaterialCommunityIcons name="alert-circle" size={18} color="#FF5252" />
               <Text style={styles.errorBannerText}>{fieldErrors.general}</Text>
             </View>
           ) : null}
@@ -292,10 +292,10 @@ export default function AddTodoScreen() {
             </TouchableOpacity>
             {categoryId ? (
               <TouchableOpacity onPress={() => setCategoryId(null)} style={styles.dropdownClear}>
-                <Ionicons name="close-circle" size={18} color={THEME.secondaryText} />
+                <MaterialCommunityIcons name="close-circle" size={18} color={THEME.secondaryText} />
               </TouchableOpacity>
             ) : (
-              <Ionicons name="chevron-down" size={18} color={THEME.secondaryText} style={{ marginLeft: 8 }} />
+              <MaterialCommunityIcons name="chevron-down" size={18} color={THEME.secondaryText} style={{ marginLeft: 8 }} />
             )}
           </View>
 
@@ -305,11 +305,11 @@ export default function AddTodoScreen() {
                 <View style={styles.dropdownModalHdr}>
                   <Text style={styles.dropdownModalTitle}>اختر تصنيف</Text>
                   <TouchableOpacity onPress={() => setCatPicking(false)}>
-                    <Ionicons name="close" size={24} color={THEME.text} />
+                    <MaterialCommunityIcons name="close" size={24} color={THEME.text} />
                   </TouchableOpacity>
                 </View>
                 <View style={styles.dropdownSearch}>
-                  <Ionicons name="search" size={18} color={THEME.secondaryText} />
+                  <MaterialCommunityIcons name="magnify" size={18} color={THEME.secondaryText} />
                   <TextInput
                     style={styles.dropdownSearchInput}
                     placeholder="ابحث عن تصنيف..."
@@ -324,10 +324,10 @@ export default function AddTodoScreen() {
                     .map(cat => (
                       <TouchableOpacity key={cat.categoryId} style={styles.dropdownOption} onPress={() => { setCategoryId(cat.categoryId); setCatPicking(false); }}>
                         <View style={styles.dropdownOptionLeft}>
-                          <Ionicons name="folder-outline" size={20} color={THEME.brand} />
+                          <MaterialCommunityIcons name="folder-outline" size={20} color={THEME.brand} />
                           <Text style={styles.dropdownOptionText}>{cat.name}</Text>
                         </View>
-                        {categoryId === cat.categoryId && <Ionicons name="checkmark-circle" size={20} color={THEME.brand} />}
+                        {categoryId === cat.categoryId && <MaterialCommunityIcons name="check-circle" size={20} color={THEME.brand} />}
                       </TouchableOpacity>
                     ))}
                   {categories.filter(c => !catSearch || c.name?.includes(catSearch)).length === 0 && (
@@ -335,7 +335,7 @@ export default function AddTodoScreen() {
                   )}
                 </ScrollView>
                 <TouchableOpacity style={styles.dropdownAdd} onPress={() => { setCatPicking(false); setCatModal(true); }}>
-                  <Ionicons name="add-circle-outline" size={20} color={THEME.brand} />
+                  <MaterialCommunityIcons name="plus-circle" size={20} color={THEME.brand} />
                   <Text style={styles.dropdownAddText}>إضافة تصنيف جديد</Text>
                 </TouchableOpacity>
               </Pressable>
@@ -351,10 +351,10 @@ export default function AddTodoScreen() {
             </TouchableOpacity>
             {workplanId ? (
               <TouchableOpacity onPress={() => setWorkplanId(null)} style={styles.dropdownClear}>
-                <Ionicons name="close-circle" size={18} color={THEME.secondaryText} />
+                <MaterialCommunityIcons name="close-circle" size={18} color={THEME.secondaryText} />
               </TouchableOpacity>
             ) : (
-              <Ionicons name="chevron-down" size={18} color={THEME.secondaryText} style={{ marginLeft: 8 }} />
+              <MaterialCommunityIcons name="chevron-down" size={18} color={THEME.secondaryText} style={{ marginLeft: 8 }} />
             )}
           </View>
 
@@ -364,11 +364,11 @@ export default function AddTodoScreen() {
                 <View style={styles.dropdownModalHdr}>
                   <Text style={styles.dropdownModalTitle}>اختر خطة عمل</Text>
                   <TouchableOpacity onPress={() => setWpModal(false)}>
-                    <Ionicons name="close" size={24} color={THEME.text} />
+                    <MaterialCommunityIcons name="close" size={24} color={THEME.text} />
                   </TouchableOpacity>
                 </View>
                 <View style={styles.dropdownSearch}>
-                  <Ionicons name="search" size={18} color={THEME.secondaryText} />
+                  <MaterialCommunityIcons name="magnify" size={18} color={THEME.secondaryText} />
                   <TextInput
                     style={styles.dropdownSearchInput}
                     placeholder="ابحث عن خطة عمل..."
@@ -383,10 +383,10 @@ export default function AddTodoScreen() {
                     .map(plan => (
                       <TouchableOpacity key={plan.workplanId} style={styles.dropdownOption} onPress={() => { setWorkplanId(plan.workplanId); setWpModal(false); }}>
                         <View style={styles.dropdownOptionLeft}>
-                          <Ionicons name="briefcase-outline" size={20} color={THEME.brand} />
+                          <MaterialCommunityIcons name="briefcase-outline" size={20} color={THEME.brand} />
                           <Text style={styles.dropdownOptionText}>{plan.name}</Text>
                         </View>
-                        {workplanId === plan.workplanId && <Ionicons name="checkmark-circle" size={20} color={THEME.brand} />}
+                        {workplanId === plan.workplanId && <MaterialCommunityIcons name="check-circle" size={20} color={THEME.brand} />}
                       </TouchableOpacity>
                     ))}
                   {workplans.filter(p => !wpSearch || p.name?.includes(wpSearch)).length === 0 && (
@@ -406,7 +406,7 @@ export default function AddTodoScreen() {
         <TouchableOpacity style={[styles.saveBtn, isSaving && { opacity: 0.7 }]} onPress={handleSave} disabled={isSaving}>
           {isSaving ? <ActivityIndicator color="#FFF" /> : (
             <>
-              <Ionicons name="checkmark-circle" size={22} color="#FFF" />
+              <MaterialCommunityIcons name="check-circle" size={22} color="#FFF" />
               <Text style={styles.saveBtnText}>إنشاء المهمة</Text>
             </>
           )}
@@ -418,16 +418,15 @@ export default function AddTodoScreen() {
         <Pressable style={styles.overlay} onPress={() => { setAdviceModal(false); router.replace('/(tabs)?success=todo_added'); }}>
           <View style={styles.adviceModalBox}>
             <TouchableOpacity style={styles.modalX} onPress={() => { setAdviceModal(false); router.replace('/(tabs)?success=todo_added'); }}>
-              <Ionicons name="close" size={22} color={THEME.text} />
+              <MaterialCommunityIcons name="close" size={22} color={THEME.text} />
             </TouchableOpacity>
             <View style={styles.adviceIconCircle}>
-              <Ionicons name="sparkles" size={32} color="#D84315" />
+              <MaterialCommunityIcons name="star-four-points" size={32} color="#D84315" />
             </View>
             <Text style={styles.adviceTitle}>نصيحة لمهمتك</Text>
             {aiAdvice && (
               <>
                 <Text style={styles.adviceText}>{aiAdvice.advice}</Text>
-                <Text style={styles.adviceSource}>المصدر: {aiAdvice.source === 'cache' ? 'ذاكرة مؤقتة' : aiAdvice.source}</Text>
               </>
             )}
             <TouchableOpacity 
@@ -445,7 +444,7 @@ export default function AddTodoScreen() {
         <Pressable style={styles.overlay} onPress={() => setCatModal(false)}>
           <Pressable style={styles.modalBox} onPress={e => e.stopPropagation()}>
             <TouchableOpacity style={styles.modalX} onPress={() => setCatModal(false)}>
-              <Ionicons name="close" size={22} color={THEME.text} />
+              <MaterialCommunityIcons name="close" size={22} color={THEME.text} />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>إضافة تصنيف جديد</Text>
             <TextInput

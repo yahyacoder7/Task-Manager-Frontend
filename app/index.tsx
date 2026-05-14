@@ -1,5 +1,5 @@
 import Colors from "@/constants/Colors";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -101,7 +101,7 @@ export default function LoginScreen() {
         >
           {loginResult ? (
             <View style={styles.successContainer}>
-              <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
+              <MaterialCommunityIcons name="check-circle" size={80} color="#4CAF50" />
               <Text style={[styles.successTitle, { color: theme.text }]}>
                 تم تسجيل الدخول بنجاح!
               </Text>
@@ -202,8 +202,7 @@ export default function LoginScreen() {
                       },
                     ]}
                   >
-                    <Ionicons
-                      name="mail-outline"
+                    <MaterialCommunityIcons name="email-outline"
                       size={20}
                       color={
                         focusedInput === "email" ? theme.brand : theme.secondaryText
@@ -253,8 +252,7 @@ export default function LoginScreen() {
                       },
                     ]}
                   >
-                    <Ionicons
-                      name="lock-closed-outline"
+                    <MaterialCommunityIcons name="lock-outline"
                       size={20}
                       color={
                         focusedInput === "password"
@@ -277,11 +275,7 @@ export default function LoginScreen() {
                       onPress={() => setShowPassword(!showPassword)}
                       style={styles.eyeIcon}
                     >
-                      <Ionicons
-                        name={showPassword ? "eye-off-outline" : "eye-outline"}
-                        size={20}
-                        color={theme.secondaryText}
-                      />
+                      {showPassword ? <MaterialCommunityIcons name="eye-off" size={20} color={theme.secondaryText} /> : <MaterialCommunityIcons name="eye" size={20} color={theme.secondaryText} />}
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -304,7 +298,7 @@ export default function LoginScreen() {
                     <ActivityIndicator color="#FFFFFF" size="small" />
                   ) : (
                     <>
-                      <Ionicons name="log-in-outline" size={20} color="#FFFFFF" />
+                      <MaterialCommunityIcons name="login-variant" size={20} color="#FFFFFF" />
                       <Text style={styles.loginButtonText}>تسجيل الدخول</Text>
                     </>
                   )}
@@ -344,7 +338,7 @@ export default function LoginScreen() {
                       { backgroundColor: theme.secondaryBackground },
                     ]}
                   >
-                    <Ionicons name="logo-google" size={22} color="#EA4335" />
+                    <MaterialCommunityIcons name="google" size={22} color="#EA4335" />
                   </TouchableOpacity>
                 </View>
 

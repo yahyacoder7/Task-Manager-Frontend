@@ -3,7 +3,8 @@ import {
   View, Text, StyleSheet, TouchableOpacity,
   ScrollView, SafeAreaView, ActivityIndicator, RefreshControl,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getItem } from '../../utils/storage';
 import { Typography } from '../../constants/Typography';
@@ -28,24 +29,26 @@ function PlanCard({ plan, onPress }: { plan: any; onPress: () => void }) {
   const { totalTodos, completedTodos, percOfCompletedTodos } = progressState || {};
 
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onPress}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.fractionBadge}>{completedTodos || 0}/{totalTodos || 0}</Text>
-        <View style={styles.cardTitleArea}>
-          <Text style={styles.cardTitle} numberOfLines={1}>{name}</Text>
-          {description ? (
-            <Text style={styles.cardDesc} numberOfLines={2}>{description}</Text>
-          ) : null}
+    <TouchableOpacity activeOpacity={0.7} onPress={onPress} style={styles.cardOuter}>
+      <LinearGradient colors={THEME.cardGradient as [string, string]} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.fractionBadge}>{completedTodos || 0}/{totalTodos || 0}</Text>
+          <View style={styles.cardTitleArea}>
+            <Text style={styles.cardTitle} numberOfLines={1}>{name}</Text>
+            {description ? (
+              <Text style={styles.cardDesc} numberOfLines={2}>{description}</Text>
+            ) : null}
+          </View>
+          <View style={styles.cardIcon}>
+            <MaterialCommunityIcons name="calendar-outline" size={22} color={THEME.brand} />
+          </View>
         </View>
-        <View style={styles.cardIcon}>
-          <Ionicons name="calendar-outline" size={22} color={THEME.brand} />
-        </View>
-      </View>
 
-      <View style={styles.progressSection}>
-        <Text style={styles.progressLabel}>{percOfCompletedTodos || 0}%</Text>
-        <ProgressBar percent={percOfCompletedTodos || 0} />
-      </View>
+        <View style={styles.progressSection}>
+          <Text style={styles.progressLabel}>{percOfCompletedTodos || 0}%</Text>
+          <ProgressBar percent={percOfCompletedTodos || 0} />
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 }
@@ -103,18 +106,18 @@ export default function PlansScreen() {
           </View>
         ) : plans.length === 0 ? (
           <View style={styles.center}>
-            <Ionicons name="calendar-outline" size={64} color={THEME.muted} />
+            <MaterialCommunityIcons name="calendar-outline" size={64} color={THEME.muted} />
             <Text style={styles.emptyTitle}>لا توجد خطط عمل</Text>
             <Text style={styles.emptySub}>أنشئ خطة عمل جديدة لتنظيم مهامك</Text>
             <TouchableOpacity style={styles.createBtn} onPress={() => router.push('/create-workplan')}>
-              <Ionicons name="add" size={20} color={THEME.white} />
+              <MaterialCommunityIcons name="plus" size={20} color={THEME.white} />
               <Text style={styles.createBtnText}>إنشاء خطة عمل</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
             <TouchableOpacity style={styles.createBtnTop} onPress={() => router.push('/create-workplan')}>
-              <Ionicons name="add-circle" size={22} color={THEME.brand} />
+              <MaterialCommunityIcons name="plus-circle" size={22} color={THEME.secondaryText} />
               <Text style={styles.createBtnTopText}>إنشاء خطة عمل جديدة</Text>
             </TouchableOpacity>
 
@@ -144,10 +147,12 @@ function createStyles(THEME: any) {
   emptySub: { color: THEME.secondaryText, fontSize: 14, fontFamily: Typography.fonts.regular, marginTop: 8, textAlign: 'center' },
   createBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: THEME.brand, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 14, marginTop: 24, gap: 8 },
   createBtnText: { color: THEME.white, fontFamily: Typography.fonts.bold, fontSize: 16 },
-  createBtnTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: THEME.card, padding: 16, borderRadius: 16, marginBottom: 16, gap: 8, borderWidth: 1, borderColor: THEME.divider },
-  createBtnTopText: { color: THEME.brand, fontFamily: Typography.fonts.bold, fontSize: 15 },
+  createBtnTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: THEME.muted, padding: 16, borderRadius: 16, marginBottom: 20, gap: 10, borderWidth: 1, borderColor: THEME.divider },
+  createBtnTopText: { color: THEME.secondaryText, fontFamily: Typography.fonts.bold, fontSize: 15 },
 
-  card: { backgroundColor: THEME.card, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: THEME.divider },
+  cardOuter: { marginBottom: 14, borderRadius: 16 },
+  card: { borderRadius: 16, padding: 16, borderWidth: 1, borderColor: THEME.divider, overflow: 'hidden' },
+
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   fractionBadge: { backgroundColor: THEME.brand, color: THEME.white, fontSize: 14, fontFamily: Typography.fonts.bold, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, overflow: 'hidden', marginLeft: 12 },
   cardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(216,67,21,0.1)', justifyContent: 'center', alignItems: 'center', marginRight: 20 },
