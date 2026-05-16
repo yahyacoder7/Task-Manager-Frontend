@@ -14,15 +14,15 @@ const iconMap: Record<string, string> = {
 };
 
 const TABS = [
-  { name: 'index', icon: 'List', label: 'المهام' },
-  { name: 'plans', icon: 'Calendar', label: 'الخطط' },
-  { name: 'stats', icon: 'ChartBar', label: 'الإحصائيات' },
-  { name: 'profile', icon: 'User', label: 'الحساب' },
+  { name: 'index', icon: 'List', label: 'Tasks' },
+  { name: 'plans', icon: 'Calendar', label: 'Plans' },
+  { name: 'stats', icon: 'ChartBar', label: 'Stats' },
+  { name: 'profile', icon: 'User', label: 'Profile' },
 ];
 
 function HeaderTitle({ title }: { title: string }) {
   const { theme: THEME } = useAppTheme();
-  return <Text style={{ color: THEME.white, fontSize: 20, fontFamily: Typography.fonts.bold, paddingRight: 16 }}>{title}</Text>;
+  return <Text style={{ color: THEME.white, fontSize: 20, fontFamily: Typography.fonts.bold, paddingLeft: 16 }}>{title}</Text>;
 }
 
 function MyTabBar({ state, navigation }: any) {
@@ -32,7 +32,7 @@ function MyTabBar({ state, navigation }: any) {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         backgroundColor: '#E65A2A', borderTopLeftRadius: 24, borderTopRightRadius: 24, height: Platform.OS === 'ios' ? 75 : 65,
         paddingBottom: Platform.OS === 'ios' ? 20 : 8, paddingTop: 8,
-        flexDirection: 'row-reverse', alignItems: 'center',
+        flexDirection: 'row', alignItems: 'center',
         elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2, shadowRadius: 12,
       }}>
@@ -72,10 +72,10 @@ export default function TabLayout() {
         headerLeft: () => null,
         headerShown: true,
       }}>
-      <Tabs.Screen name="stats" options={{ headerRight: () => <HeaderTitle title="الإحصائيات" /> }} />
-      <Tabs.Screen name="plans" options={{ headerRight: () => <HeaderTitle title="خطط العمل" /> }} />
-      <Tabs.Screen name="index" options={{ headerRight: () => <HeaderTitle title="المهام" /> }} />
-      <Tabs.Screen name="profile" options={{ headerRight: () => <HeaderTitle title="حسابي" /> }} />
+      <Tabs.Screen name="stats" options={{ headerLeft: () => <HeaderTitle title="Statistics" /> }} />
+      <Tabs.Screen name="plans" options={{ headerLeft: () => <HeaderTitle title="Work Plans" /> }} />
+      <Tabs.Screen name="index" options={{ headerLeft: () => <HeaderTitle title="Tasks" /> }} />
+      <Tabs.Screen name="profile" options={{ headerLeft: () => <HeaderTitle title="My Profile" /> }} />
     </Tabs>
   );
 }

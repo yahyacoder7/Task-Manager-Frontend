@@ -74,10 +74,10 @@ export default function PlansScreen() {
       if (res.ok) {
         setPlans(await res.json());
       } else {
-        setError('فشل تحميل خطط العمل');
+        setError('Failed to load work plans');
       }
     } catch {
-      setError('تعذّر الاتصال بالسيرفر');
+      setError('Server connection failed');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -87,7 +87,7 @@ export default function PlansScreen() {
   useFocusEffect(useCallback(() => { fetchPlans(); }, []));
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -97,7 +97,7 @@ export default function PlansScreen() {
           <View style={styles.center}>
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity style={styles.retryBtn} onPress={() => fetchPlans()}>
-              <Text style={styles.retryText}>إعادة المحاولة</Text>
+              <Text style={styles.retryText}>Retry</Text>
             </TouchableOpacity>
           </View>
         ) : isLoading ? (
@@ -107,18 +107,18 @@ export default function PlansScreen() {
         ) : plans.length === 0 ? (
           <View style={styles.center}>
             <MaterialCommunityIcons name="calendar-outline" size={64} color={THEME.muted} />
-            <Text style={styles.emptyTitle}>لا توجد خطط عمل</Text>
-            <Text style={styles.emptySub}>أنشئ خطة عمل جديدة لتنظيم مهامك</Text>
+            <Text style={styles.emptyTitle}>No work plans</Text>
+            <Text style={styles.emptySub}>Create a new work plan to organize your tasks</Text>
             <TouchableOpacity style={styles.createBtn} onPress={() => router.push('/create-workplan')}>
               <MaterialCommunityIcons name="plus" size={20} color={THEME.white} />
-              <Text style={styles.createBtnText}>إنشاء خطة عمل</Text>
+              <Text style={styles.createBtnText}>Create Work Plan</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
             <TouchableOpacity style={styles.createBtnTop} onPress={() => router.push('/create-workplan')}>
               <MaterialCommunityIcons name="plus-circle" size={22} color={THEME.secondaryText} />
-              <Text style={styles.createBtnTopText}>إنشاء خطة عمل جديدة</Text>
+              <Text style={styles.createBtnTopText}>Create New Work Plan</Text>
             </TouchableOpacity>
 
             {plans.map(plan => (
@@ -154,11 +154,11 @@ function createStyles(THEME: any) {
   card: { borderRadius: 16, padding: 16, borderWidth: 1, borderColor: THEME.divider, overflow: 'hidden' },
 
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  fractionBadge: { backgroundColor: THEME.brand, color: THEME.white, fontSize: 14, fontFamily: Typography.fonts.bold, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, overflow: 'hidden', marginLeft: 12 },
-  cardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(216,67,21,0.1)', justifyContent: 'center', alignItems: 'center', marginRight: 20 },
+  fractionBadge: { backgroundColor: THEME.brand, color: THEME.white, fontSize: 14, fontFamily: Typography.fonts.bold, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, overflow: 'hidden', marginRight: 12 },
+  cardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(216,67,21,0.1)', justifyContent: 'center', alignItems: 'center', marginLeft: 20 },
   cardTitleArea: { flex: 1 },
-  cardTitle: { color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.bold, textAlign: 'right' },
-  cardDesc: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.regular, marginTop: 4, textAlign: 'right' },
+  cardTitle: { color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.bold, textAlign: 'left' },
+  cardDesc: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.regular, marginTop: 4, textAlign: 'left' },
   progressSection: { marginTop: 14 },
   progressLabel: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.medium, marginBottom: 6, textAlign: 'left' },
   progressTrack: { height: 6, borderRadius: 3, backgroundColor: THEME.muted },

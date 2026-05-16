@@ -51,7 +51,7 @@ export default function StatsScreen() {
 
   if (loading && !overview) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
         <View style={styles.center}>
           <ActivityIndicator size="large" color={THEME.brand} />
         </View>
@@ -62,55 +62,53 @@ export default function StatsScreen() {
   const MAX_TREND = 10;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchAll(true); }} tintColor={THEME.brand} />}
       >
-        {/* Summary Cards */}
-        <Text style={styles.sectionTitle}>نظرة عامة</Text>
+        <Text style={styles.sectionTitle}>Overview</Text>
         <View style={styles.cardsGrid}>
           <View style={styles.statCard}>
             <View style={[styles.statIconBox, { backgroundColor: 'rgba(99,102,241,0.1)' }]}>
               <MaterialCommunityIcons name="format-list-bulleted" size={22} color="#6366F1" />
             </View>
             <Text style={styles.statValue}>{overview?.totalTasks ?? 0}</Text>
-            <Text style={styles.statLabel}>إجمالي المهام</Text>
+            <Text style={styles.statLabel}>Total Tasks</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconBox, { backgroundColor: 'rgba(34,197,94,0.1)' }]}>
               <MaterialCommunityIcons name="check-circle-outline" size={22} color="#22C55E" />
             </View>
             <Text style={styles.statValue}>{overview?.completedToday ?? 0}</Text>
-            <Text style={styles.statLabel}>مكتمل اليوم</Text>
+            <Text style={styles.statLabel}>Completed Today</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconBox, { backgroundColor: 'rgba(251,191,36,0.1)' }]}>
               <MaterialCommunityIcons name="calendar-outline" size={22} color="#FBBF24" />
             </View>
             <Text style={styles.statValue}>{overview?.activeWorkplans ?? 0}</Text>
-            <Text style={styles.statLabel}>خطط العمل</Text>
+            <Text style={styles.statLabel}>Work Plans</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconBox, { backgroundColor: 'rgba(168,85,247,0.1)' }]}>
               <MaterialCommunityIcons name="infinity" size={22} color="#A855F7" />
             </View>
             <Text style={styles.statValue}>{overview?.repeatingTasks ?? 0}</Text>
-            <Text style={styles.statLabel}>مهام متكررة</Text>
+            <Text style={styles.statLabel}>Repeating Tasks</Text>
           </View>
         </View>
 
-        {/* Weekly Completion Trend */}
-        <Text style={styles.sectionTitle}>آخر 7 أيام</Text>
+        <Text style={styles.sectionTitle}>Last 7 Days</Text>
         <View style={styles.chartCard}>
           {trend.length === 0 ? (
-            <Text style={styles.emptyText}>لا توجد بيانات</Text>
+            <Text style={styles.emptyText}>No data available</Text>
           ) : (
             <View style={styles.chartBars}>
               {trend.map((day, idx) => {
                 const barHeight = Math.max((day.count / MAX_TREND) * 100, day.count > 0 ? 8 : 4);
-                const dayName = new Date(day.date).toLocaleDateString('ar-SA', { weekday: 'short' });
+                const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' });
                 return (
                   <View key={idx} style={styles.barCol}>
                     <Text style={styles.barCount}>{day.count}</Text>
@@ -123,10 +121,9 @@ export default function StatsScreen() {
           )}
         </View>
 
-        {/* Category Breakdown */}
         {categoryBreakdown.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>المهام حسب التصنيف</Text>
+            <Text style={styles.sectionTitle}>Tasks by Category</Text>
             <View style={styles.chartCard}>
               {(expandedCategory ? categoryBreakdown : categoryBreakdown.slice(0, 3)).map((cat, idx) => {
                 const remaining = cat.total - cat.completed;
@@ -142,7 +139,7 @@ export default function StatsScreen() {
                       <Text style={styles.catCardFraction}>{cat.completed}/{cat.total}</Text>
                     </View>
                     <Text style={styles.catCardSub}>
-                      {cat.total} مهام — {remaining > 0 ? `${remaining} متبقية` : 'مكتملة'}
+                      {cat.total} tasks — {remaining > 0 ? `${remaining} remaining` : 'completed'}
                     </Text>
                   </View>
                 );
@@ -150,24 +147,23 @@ export default function StatsScreen() {
             </View>
             {categoryBreakdown.length > 3 && (
               <TouchableOpacity style={styles.toggleBtn} onPress={() => setExpandedCategory(!expandedCategory)}>
-                <Text style={styles.toggleBtnText}>{expandedCategory ? 'عرض أقل' : 'عرض المزيد'}</Text>
+                <Text style={styles.toggleBtnText}>{expandedCategory ? 'Show Less' : 'Show More'}</Text>
                 <MaterialCommunityIcons name={expandedCategory ? "chevron-up" : "chevron-down"} size={16} color={THEME.brand} />
               </TouchableOpacity>
             )}
           </>
         )}
 
-        {/* Time Distribution */}
         <>
-          <Text style={styles.sectionTitle}>توزيع الوقت التقريبي</Text>
-          <Text style={styles.timeDesc}>مهامك موزعة حسب الوقت المناسب: صباحاً، مساءً، ليلاً</Text>
+          <Text style={styles.sectionTitle}>Approximate Time Distribution</Text>
+          <Text style={styles.timeDesc}>Your tasks are distributed by suitable time: Morning, Afternoon, Evening, Night</Text>
           <View style={styles.chartCard}>
             <View style={styles.timeGrid}>
               {[
-                { label: 'صباح', icon: 'weather-partly-cloudy' },
-                { label: 'ظهر', icon: 'weather-sunny' },
-                { label: 'مساء', icon: 'weather-night-partly-cloudy' },
-                { label: 'ليل', icon: 'weather-night' },
+                { label: 'Morning', icon: 'weather-partly-cloudy' },
+                { label: 'Afternoon', icon: 'weather-sunny' },
+                { label: 'Evening', icon: 'weather-night-partly-cloudy' },
+                { label: 'Night', icon: 'weather-night' },
               ].map((period, idx) => {
                 const match = timeDist.find((t: any) => t.label?.includes(period.label));
                 return (
@@ -193,13 +189,13 @@ function createStyles(THEME: any) {
   container: { flex: 1, backgroundColor: THEME.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: THEME.background },
   scroll: { padding: 20 },
-  sectionTitle: { color: THEME.text, fontSize: 18, fontFamily: Typography.fonts.bold, textAlign: 'right', marginTop: 24, marginBottom: 14 },
+  sectionTitle: { color: THEME.text, fontSize: 18, fontFamily: Typography.fonts.bold, textAlign: 'left', marginTop: 24, marginBottom: 14 },
 
   cardsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   statCard: { width: '47%', backgroundColor: THEME.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: THEME.divider },
   statIconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  statValue: { color: THEME.text, fontSize: 28, fontFamily: Typography.fonts.bold, textAlign: 'right' },
-  statLabel: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.regular, marginTop: 4, textAlign: 'right' },
+  statValue: { color: THEME.text, fontSize: 28, fontFamily: Typography.fonts.bold, textAlign: 'left' },
+  statLabel: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.regular, marginTop: 4, textAlign: 'left' },
 
   chartCard: { backgroundColor: THEME.card, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: THEME.divider },
   emptyText: { color: THEME.disabledText, fontSize: 14, fontFamily: Typography.fonts.regular, textAlign: 'center', paddingVertical: 20 },
@@ -211,27 +207,27 @@ function createStyles(THEME: any) {
   barLabel: { color: THEME.disabledText, fontSize: 11, fontFamily: Typography.fonts.regular, marginTop: 6 },
 
   catCard: { backgroundColor: THEME.muted, borderRadius: 12, padding: 14, marginBottom: 10 },
-  catCardRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
-  catCardLeft: { flexDirection: 'row-reverse', alignItems: 'center', flex: 1, gap: 8 },
+  catCardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  catCardLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 },
   catDot: { width: 10, height: 10, borderRadius: 5 },
-  catCardName: { color: THEME.text, fontSize: 14, fontFamily: Typography.fonts.medium, textAlign: 'right' },
+  catCardName: { color: THEME.text, fontSize: 14, fontFamily: Typography.fonts.medium, textAlign: 'left' },
   catCardFraction: { color: THEME.brand, fontSize: 14, fontFamily: Typography.fonts.bold },
-  catCardSub: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, marginTop: 6, textAlign: 'right' },
+  catCardSub: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, marginTop: 6, textAlign: 'left' },
 
-  timeDesc: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, textAlign: 'right', marginBottom: 14 },
-  timeGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 10, justifyContent: 'center' },
+  timeDesc: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, textAlign: 'left', marginBottom: 14 },
+  timeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' },
   timeChip: { backgroundColor: THEME.muted, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 20, alignItems: 'center', minWidth: 70, gap: 4 },
   timeCount: { color: THEME.text, fontSize: 22, fontFamily: Typography.fonts.bold },
   timeLabel: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, marginTop: 4 },
 
   wpCard: { backgroundColor: THEME.card, borderRadius: 14, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: THEME.divider },
   wpHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  wpName: { color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.bold, textAlign: 'right', flex: 1 },
+  wpName: { color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.bold, textAlign: 'left', flex: 1 },
   wpPercent: { color: THEME.brand, fontSize: 16, fontFamily: Typography.fonts.bold },
   wpBarTrack: { height: 8, borderRadius: 4, backgroundColor: THEME.muted, overflow: 'hidden' },
   wpBarFill: { height: 8, borderRadius: 4, backgroundColor: THEME.brand },
-  wpCount: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, marginTop: 6, textAlign: 'right' },
+  wpCount: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, marginTop: 6, textAlign: 'left' },
   toggleBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, marginTop: 4 },
-  toggleBtnText: { color: THEME.brand, fontSize: 13, fontFamily: Typography.fonts.medium, marginRight: 6 },
+  toggleBtnText: { color: THEME.brand, fontSize: 13, fontFamily: Typography.fonts.medium, marginLeft: 6 },
   });
 }

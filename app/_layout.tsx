@@ -17,25 +17,17 @@ import {
 import { I18nManager, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// Force RTL globally for Arabic support
-try {
-  I18nManager.allowRTL(true);
-  I18nManager.forceRTL(true);
-} catch (e) {
-  console.log(e);
-}
+I18nManager.forceRTL(false);
+I18nManager.allowRTL(false);
 
 export {
-  // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: 'index',
+  initialRouteName: 'splash',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -46,7 +38,6 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -68,7 +59,7 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, direction: 'rtl' } as any}>
+    <GestureHandlerRootView style={{ flex: 1, direction: 'ltr' } as any}>
       <AppThemeProvider>
         <NavContent />
       </AppThemeProvider>
@@ -80,9 +71,10 @@ function NavContent() {
   const { isDark } = useAppTheme();
 
   return (
-    <View style={{ flex: 1, direction: 'rtl' } as any}>
+    <View style={{ flex: 1, direction: 'ltr' } as any}>
       <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
         <Stack>
+          <Stack.Screen name="splash" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="register" options={{ headerShown: false }} />
           <Stack.Screen name="verify-otp" options={{ headerShown: false }} />

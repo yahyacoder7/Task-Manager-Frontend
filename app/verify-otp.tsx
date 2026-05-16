@@ -34,10 +34,11 @@ export default function VerifyOtpScreen() {
   const [result, setResult] = useState<any>(null);
   const [isFocused, setIsFocused] = useState(false);
 
-  const hiddenInputRef = useRef<TextInput | null>(null);
+  const inputRef = useRef<TextInput | null>(null);
+  const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval>;
     if (timer > 0) {
       interval = setInterval(() => {
         setTimer((prev) => prev - 1);
@@ -47,15 +48,19 @@ export default function VerifyOtpScreen() {
   }, [timer]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      hiddenInputRef.current?.focus();
-    }, 300);
-    return () => clearTimeout(timer);
+    focusTimerRef.current = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 400);
+    return () => {
+      if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+    };
   }, []);
 
-  const getActiveIndex = (): number => {
-    const idx = otp.findIndex((d) => d === "");
-    return idx === -1 ? OTP_LENGTH - 1 : idx;
+  const handleFocusInput = () => {
+    if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+    focusTimerRef.current = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
   const handleChange = (value: string) => {
@@ -63,46 +68,28 @@ export default function VerifyOtpScreen() {
 
     const digits = value.replace(/[^0-9]/g, "").split("").slice(0, OTP_LENGTH);
 
-    if (digits.length === 0) return;
-
-    if (digits.length > 1) {
-      const filled = [...otp];
-      digits.forEach((d, i) => {
-        if (i < OTP_LENGTH) filled[i] = d;
-      });
-      setOtp(filled);
-      return;
-    }
-
-    const activeIndex = getActiveIndex();
-    const newOtp = [...otp];
-    newOtp[activeIndex] = digits[0];
+    const newOtp = Array(OTP_LENGTH).fill("");
+    digits.forEach((d, i) => {
+      if (i < OTP_LENGTH) newOtp[i] = d;
+    });
     setOtp(newOtp);
   };
 
   const handleKeyPress = (e: any) => {
     if (e.nativeEvent.key === "Backspace") {
-      const activeIndex = getActiveIndex();
-      const newOtp = [...otp];
-
-      if (newOtp[activeIndex] !== "") {
-        newOtp[activeIndex] = "";
-        setOtp(newOtp);
-      } else if (activeIndex > 0) {
-        newOtp[activeIndex - 1] = "";
+      const filledCount = otp.filter((d) => d !== "").length;
+      if (filledCount > 0) {
+        const newOtp = [...otp];
+        newOtp[filledCount - 1] = "";
         setOtp(newOtp);
       }
     }
   };
 
-  const handleBoxPress = () => {
-    hiddenInputRef.current?.focus();
-  };
-
   const handleVerify = async () => {
     const otpString = otp.join("");
     if (otpString.length < OTP_LENGTH) {
-      setError("يرجى إدخال رمز التحقق كاملاً");
+      setError("Please enter the full verification code");
       return;
     }
 
@@ -130,14 +117,14 @@ export default function VerifyOtpScreen() {
         setResult(data);
         console.log("Verify Success:", data);
         setTimeout(() => {
-          router.replace("/(tabs)");
+          router.replace("/");
         }, 1500);
       } else {
-        setError(data.message || "رمز التحقق غير صحيح أو انتهت صلاحيته.");
+        setError(data.message || "Invalid or expired verification code.");
       }
     } catch (err) {
       console.error("Verify Error:", err);
-      setError("حدث خطأ أثناء الاتصال بالخادم.");
+      setError("Server connection error.");
     } finally {
       setIsLoading(false);
     }
@@ -146,6 +133,7 @@ export default function VerifyOtpScreen() {
   const handleResendOtp = async () => {
     setIsLoading(true);
     setError(null);
+    setOtp(Array(OTP_LENGTH).fill(""));
     try {
       const response = await fetch(`${BASE_URL}/auth/resend-otp`, {
         method: "POST",
@@ -157,13 +145,13 @@ export default function VerifyOtpScreen() {
 
       if (response.ok) {
         setTimer(60);
-        setSuccessMessage("تم إعادة إرسال الرمز إلى بريدك بنجاح");
+        setSuccessMessage("Code resent to your email successfully");
         setTimeout(() => setSuccessMessage(null), 3000);
       } else {
-        setError("فشل إعادة إرسال الرمز. يرجى المحاولة لاحقاً.");
+        setError("Failed to resend code. Please try again later.");
       }
     } catch (err) {
-      setError("حدث خطأ في الاتصال.");
+      setError("Connection error.");
     } finally {
       setIsLoading(false);
     }
@@ -171,7 +159,7 @@ export default function VerifyOtpScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }, { direction: 'rtl' } as any]}
+      style={[styles.container, { backgroundColor: theme.background }, { direction: 'ltr' } as any]}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
@@ -187,7 +175,7 @@ export default function VerifyOtpScreen() {
             <View style={styles.successContainer}>
               <MaterialCommunityIcons name="check-circle" size={80} color="#4CAF50" />
               <Text style={[styles.successTitle, { color: theme.text }]}>
-                تم إنشاء الحساب بنجاح!
+                Account Created Successfully!
               </Text>
               <View
                 style={[
@@ -196,7 +184,7 @@ export default function VerifyOtpScreen() {
                 ]}
               >
                 <Text style={[styles.resultText, { color: theme.text }]}>
-                  مرحباً بك: {result.user.name}
+                  Welcome: {result.user.name}
                 </Text>
                 <Text style={[styles.jsonText, { color: theme.secondaryText }]}>
                   {JSON.stringify(result.user, null, 2)}
@@ -213,7 +201,7 @@ export default function VerifyOtpScreen() {
                 ]}
                 onPress={() => router.replace("/")}
               >
-                <Text style={styles.loginButtonText}>الذهاب لتسجيل الدخول</Text>
+                <Text style={styles.loginButtonText}>Go to Sign In</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -230,7 +218,7 @@ export default function VerifyOtpScreen() {
                   color={theme.brand}
                 />
                 <Text style={[styles.backText, { color: theme.brand }]}>
-                  إنشاء حساب آخر
+                  Create Another Account
                 </Text>
               </TouchableOpacity>
             </View>
@@ -246,12 +234,12 @@ export default function VerifyOtpScreen() {
                   <Text style={[styles.appName, { color: theme.text }]}>Task Flow</Text>
                 </View>
                 <Text style={[styles.welcomeText, { color: theme.text }]}>
-                  تأكيد الرمز
+                  Verify Code
                 </Text>
                 <Text
                   style={[styles.description, { color: theme.secondaryText }]}
                 >
-                  أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني
+                  Enter the 6-digit code sent to your email
                 </Text>
                 <Text style={[styles.emailText, { color: theme.brand }]}>
                   {email}
@@ -283,33 +271,34 @@ export default function VerifyOtpScreen() {
 
                 <TouchableOpacity
                   style={styles.otpContainer}
-                  onPress={handleBoxPress}
+                  onPress={handleFocusInput}
                   activeOpacity={1}
                 >
                   {otp.map((digit, index) => {
-                    const isActive = digit === "" && index === getActiveIndex();
+                    const isFilled = digit !== "";
+                    const isEmptySpot = !isFilled && index === otp.filter((d) => d !== "").length;
                     return (
                       <View
                         key={index}
                         style={[
                           styles.otpBox,
                           {
-                            backgroundColor: isActive && isFocused
-                              ? "rgba(216, 67, 21, 0.15)"
+                            backgroundColor: isEmptySpot && isFocused
+                              ? "rgba(216, 67, 21, 0.1)"
                               : theme.secondaryBackground,
-                            borderColor: digit
+                            borderColor: isFilled
                               ? theme.brand
-                              : isActive && isFocused
+                              : isEmptySpot && isFocused
                               ? theme.brand
-                              : "transparent",
-                            borderWidth: digit || (isActive && isFocused) ? 2 : 1,
+                              : "rgba(255,255,255,0.15)",
+                            borderWidth: 2,
                           },
                         ]}
                       >
                         <Text style={[styles.otpDigit, { color: theme.text }]}>
                           {digit}
                         </Text>
-                        {isActive && isFocused && (
+                        {isEmptySpot && isFocused && (
                           <View style={styles.cursor} />
                         )}
                       </View>
@@ -318,7 +307,7 @@ export default function VerifyOtpScreen() {
                 </TouchableOpacity>
 
                 <TextInput
-                  ref={hiddenInputRef}
+                  ref={inputRef}
                   style={styles.hiddenInput}
                   value={otp.join("")}
                   onChangeText={handleChange}
@@ -330,28 +319,24 @@ export default function VerifyOtpScreen() {
                   onBlur={() => setIsFocused(false)}
                   autoComplete="sms-otp"
                   textContentType="oneTimeCode"
+                  importantForAutofill="no"
                 />
 
                 <View style={styles.resendContainer}>
-                  <Text
-                    style={[styles.resendText, { color: theme.secondaryText }]}
-                  >
-                    لم يصلك الرمز؟{" "}
-                    {timer > 0 ? (
-                      <Text style={{ color: theme.secondaryText }}>
-                        إعادة إرسال الرمز (بعد{" "}
-                        {timer < 10 ? `0${timer}` : timer}:00)
-                      </Text>
-                    ) : (
-                      <TouchableOpacity onPress={handleResendOtp}>
-                        <Text
-                          style={{ color: theme.brand, fontWeight: "bold" }}
-                        >
-                          إعادة إرسال الرمز
-                        </Text>
-                      </TouchableOpacity>
-                    )}
+                  <Text style={[styles.resendText, { color: theme.secondaryText }]}>
+                    Didn't receive a code?{" "}
                   </Text>
+                  {timer > 0 ? (
+                    <Text style={[styles.timerText, { color: theme.brand }]}>
+                      Resend available in {timer}s
+                    </Text>
+                  ) : (
+                    <TouchableOpacity onPress={handleResendOtp}>
+                      <Text style={[styles.resendLink, { color: theme.brand }]}>
+                        Resend Code
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 <TouchableOpacity
@@ -366,7 +351,7 @@ export default function VerifyOtpScreen() {
                   {isLoading ? (
                     <ActivityIndicator color="#FFFFFF" />
                   ) : (
-                    <Text style={styles.loginButtonText}>تأكيد الرمز</Text>
+                    <Text style={styles.loginButtonText}>Verify Code</Text>
                   )}
                 </TouchableOpacity>
 
@@ -374,9 +359,9 @@ export default function VerifyOtpScreen() {
                   style={styles.backButton}
                   onPress={() => router.back()}
                 >
-                  <MaterialCommunityIcons name="arrow-right" size={20} color={theme.brand} />
+                  <MaterialCommunityIcons name="arrow-left" size={20} color={theme.brand} />
                   <Text style={[styles.backText, { color: theme.brand }]}>
-                    تغيير البريد الإلكتروني
+                    Change Email
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -441,10 +426,10 @@ const styles = StyleSheet.create({
   },
   otpContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     width: "100%",
     marginBottom: 30,
-    paddingHorizontal: 10,
+    gap: 10,
   },
   otpBox: {
     width: 48,
@@ -459,7 +444,7 @@ const styles = StyleSheet.create({
   },
   cursor: {
     position: "absolute",
-    right: 14,
+    left: 14,
     width: 2,
     height: 24,
     backgroundColor: "#D84315",
@@ -484,10 +469,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   resendContainer: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    flexWrap: "wrap",
   },
   resendText: {
-    fontSize: 13,
+    fontSize: 14,
+  },
+  timerText: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  resendLink: {
+    fontSize: 14,
+    fontWeight: "bold",
   },
   loginButton: {
     height: 60,

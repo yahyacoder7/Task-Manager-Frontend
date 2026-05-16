@@ -53,11 +53,11 @@ export default function WorkplanDetailScreen() {
       if (res.ok) {
         setWorkplan(await res.json());
       } else {
-        Alert.alert('خطأ', 'تعذر تحميل تفاصيل خطة العمل');
+        Alert.alert('Error', 'Unable to load work plan details');
         router.back();
       }
     } catch {
-      Alert.alert('خطأ', 'مشكلة في الاتصال بالخادم');
+      Alert.alert('Error', 'Server connection problem');
     } finally {
       setIsLoading(false);
     }
@@ -77,20 +77,20 @@ export default function WorkplanDetailScreen() {
       if (res.ok) {
         router.replace('/(tabs)/plans');
       } else {
-        Alert.alert('خطأ', 'فشل الحذف');
+        Alert.alert('Error', 'Delete failed');
       }
     } catch {
-      Alert.alert('خطأ', 'مشكلة في الاتصال');
+      Alert.alert('Error', 'Connection problem');
     } finally {
       setIsDeleting(false);
     }
   };
 
   const handleRemoveTodo = (todoId: number, title: string) => {
-    Alert.alert('إزالة مهمة', `إزالة "${title}" من خطة العمل؟`, [
-      { text: 'إلغاء', style: 'cancel' },
+    Alert.alert('Remove Task', `Remove "${title}" from the work plan?`, [
+      { text: 'Cancel', style: 'cancel' },
       {
-        text: 'إزالة', style: 'destructive', onPress: async () => {
+        text: 'Remove', style: 'destructive', onPress: async () => {
           try {
             const token = await getItem('userToken');
             const res = await fetch(`${BASE_URL}/work-plan/remove-todo/${todoId}`, {
@@ -100,10 +100,10 @@ export default function WorkplanDetailScreen() {
             if (res.ok) {
               await fetchWorkplan();
             } else {
-              Alert.alert('خطأ', 'فشلت الإزالة');
+              Alert.alert('Error', 'Remove failed');
             }
           } catch {
-            Alert.alert('خطأ', 'مشكلة في الاتصال');
+            Alert.alert('Error', 'Connection problem');
           }
         },
       },
@@ -123,7 +123,7 @@ export default function WorkplanDetailScreen() {
 
   if (isLoading || !workplan) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <SafeAreaView style={[styles.centerContainer, { direction: 'ltr' } as any]}>
         <ActivityIndicator size="large" color={THEME.brand} />
       </SafeAreaView>
     );
@@ -133,18 +133,18 @@ export default function WorkplanDetailScreen() {
   const { totalTodos, completedTodos, percOfCompletedTodos } = progressState || {};
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
       <Stack.Screen options={{
         headerTitle: '',
         headerStyle: { backgroundColor: '#E65A2A' },
         headerShadowVisible: false,
-        headerRight: () => (
+        headerLeft: () => (
           <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-            <Text style={styles.headerTitle}>تفاصيل الخطة</Text>
-            <MaterialCommunityIcons name="arrow-right" size={24} color={THEME.white} />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={THEME.white} />
+            <Text style={styles.headerTitle}>Plan Details</Text>
           </TouchableOpacity>
         ),
-        headerLeft: () => (
+        headerRight: () => (
           <TouchableOpacity onPress={() => setOptionsVisible(true)} style={styles.optionsBtn}>
             <MaterialCommunityIcons name="dots-vertical" size={22} color={THEME.white} />
           </TouchableOpacity>
@@ -160,16 +160,16 @@ export default function WorkplanDetailScreen() {
           {description ? <Text style={styles.desc}>{description}</Text> : null}
           <View style={styles.progressSection}>
             <ProgressBar percent={percOfCompletedTodos || 0} />
-            <Text style={styles.progressLabel}>{percOfCompletedTodos || 0}% مكتمل</Text>
+            <Text style={styles.progressLabel}>{percOfCompletedTodos || 0}% Complete</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>المهام ({todo?.length || 0})</Text>
+        <Text style={styles.sectionTitle}>Tasks ({todo?.length || 0})</Text>
 
         {(!todo || todo.length === 0) && (
           <View style={styles.emptyBox}>
             <MaterialCommunityIcons name="file-document-outline" size={40} color={THEME.muted} />
-            <Text style={styles.emptyText}>لا توجد مهام في هذه الخطة</Text>
+            <Text style={styles.emptyText}>No tasks in this plan</Text>
           </View>
         )}
 
@@ -212,14 +212,14 @@ export default function WorkplanDetailScreen() {
       <Modal visible={optionsVisible} transparent animationType="fade" onRequestClose={() => setOptionsVisible(false)}>
         <Pressable style={styles.overlay} onPress={() => setOptionsVisible(false)}>
           <Pressable style={styles.modalBox} onPress={e => e.stopPropagation()}>
-            <Text style={styles.modalTitle}>خيارات خطة العمل</Text>
+            <Text style={styles.modalTitle}>Work Plan Options</Text>
 
             <TouchableOpacity style={styles.modalActionBtn} onPress={() => {
               setOptionsVisible(false);
               router.push({ pathname: '/edit-workplan/[id]', params: { id: id as string } } as any);
             }}>
               <MaterialCommunityIcons name="pencil" size={20} color={THEME.brand} />
-              <Text style={styles.modalActionText}>تعديل خطة العمل</Text>
+              <Text style={styles.modalActionText}>Edit Work Plan</Text>
             </TouchableOpacity>
 
             <View style={styles.modalDivider} />
@@ -229,7 +229,7 @@ export default function WorkplanDetailScreen() {
               setConfirmDeleteVisible(true);
             }}>
               <MaterialCommunityIcons name="delete-outline" size={20} color={THEME.danger} />
-              <Text style={[styles.modalActionText, { color: THEME.danger }]}>حذف خطة العمل</Text>
+              <Text style={[styles.modalActionText, { color: THEME.danger }]}>Delete Work Plan</Text>
             </TouchableOpacity>
           </Pressable>
         </Pressable>
@@ -241,17 +241,17 @@ export default function WorkplanDetailScreen() {
             <View style={styles.confirmIconCircle}>
               <MaterialCommunityIcons name="alert-outline" size={40} color={THEME.danger} />
             </View>
-            <Text style={styles.confirmTitle}>حذف خطة العمل</Text>
-            <Text style={styles.confirmMessage}>هل أنت متأكد من حذف "{name}"؟ لا يمكن التراجع عن هذا الإجراء.</Text>
+            <Text style={styles.confirmTitle}>Delete Work Plan</Text>
+            <Text style={styles.confirmMessage}>Are you sure you want to delete "{name}"? This action cannot be undone.</Text>
             <View style={styles.confirmActions}>
               <TouchableOpacity style={styles.cancelBtn} onPress={() => setConfirmDeleteVisible(false)}>
-                <Text style={styles.cancelBtnText}>إلغاء</Text>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
                 {isDeleting ? (
                   <ActivityIndicator color={THEME.white} size="small" />
                 ) : (
-                  <><MaterialCommunityIcons name="delete-outline" size={18} color={THEME.white} /><Text style={styles.deleteBtnText}>حذف</Text></>
+                  <><MaterialCommunityIcons name="delete-outline" size={18} color={THEME.white} /><Text style={styles.deleteBtnText}>Delete</Text></>
                 )}
               </TouchableOpacity>
             </View>
@@ -273,15 +273,15 @@ function createStyles(THEME: any) {
 
   mainCard: { backgroundColor: THEME.card, borderRadius: 20, padding: 20, marginBottom: 24, borderWidth: 1, borderColor: THEME.divider },
   titleRow: { flexDirection: 'row', alignItems: 'center' },
-  title: { color: THEME.text, fontSize: 22, fontFamily: Typography.fonts.bold, textAlign: 'right', flex: 1 },
-  fractionBadge: { backgroundColor: THEME.brand, color: THEME.white, fontSize: 14, fontFamily: Typography.fonts.bold, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, overflow: 'hidden', marginLeft: 12 },
-  desc: { color: THEME.secondaryText, fontSize: 14, fontFamily: Typography.fonts.regular, marginTop: 8, textAlign: 'right', lineHeight: 22 },
+  title: { color: THEME.text, fontSize: 22, fontFamily: Typography.fonts.bold, textAlign: 'left', flex: 1 },
+  fractionBadge: { backgroundColor: THEME.brand, color: THEME.white, fontSize: 14, fontFamily: Typography.fonts.bold, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, overflow: 'hidden', marginRight: 12 },
+  desc: { color: THEME.secondaryText, fontSize: 14, fontFamily: Typography.fonts.regular, marginTop: 8, textAlign: 'left', lineHeight: 22 },
   progressSection: { marginTop: 20 },
   progressTrack: { height: 8, borderRadius: 4, backgroundColor: THEME.muted },
   progressFill: { height: 8, borderRadius: 4, backgroundColor: THEME.brand },
   progressLabel: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.medium, marginTop: 8, textAlign: 'center' },
 
-  sectionTitle: { color: THEME.text, fontSize: 17, fontFamily: Typography.fonts.bold, marginBottom: 12, textAlign: 'right' },
+  sectionTitle: { color: THEME.text, fontSize: 17, fontFamily: Typography.fonts.bold, marginBottom: 12, textAlign: 'left' },
   emptyBox: { alignItems: 'center', paddingVertical: 40 },
   emptyText: { color: THEME.disabledText, fontSize: 15, fontFamily: Typography.fonts.regular, marginTop: 12 },
 
@@ -295,9 +295,9 @@ function createStyles(THEME: any) {
   todoCardDone: { opacity: 0.55 },
   todoInfo: { flex: 1 },
   todoHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  todoTitle: { color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.medium, textAlign: 'right', flex: 1 },
+  todoTitle: { color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.medium, textAlign: 'left', flex: 1 },
   todoTitleDone: { textDecorationLine: 'line-through', color: THEME.secondaryText },
-  todoDesc: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.regular, textAlign: 'right', marginTop: 8 },
+  todoDesc: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.regular, textAlign: 'left', marginTop: 8 },
   catBadge: { backgroundColor: THEME.muted, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
   catText: { color: THEME.secondaryText, fontSize: 11, fontFamily: Typography.fonts.medium },
   completeBtn: { padding: 4 },
@@ -308,7 +308,7 @@ function createStyles(THEME: any) {
   overlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.65)' },
   modalBox: { backgroundColor: THEME.secondaryBackground, borderRadius: 20, padding: 24, width: '85%', maxWidth: 360 },
   modalTitle: { color: THEME.text, fontSize: 18, fontFamily: Typography.fonts.bold, textAlign: 'center', marginBottom: 20 },
-  modalActionBtn: { flexDirection: 'row-reverse', alignItems: 'center', paddingVertical: 14, gap: 12 },
+  modalActionBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, gap: 12 },
   modalActionText: { color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.medium },
   modalDivider: { height: 1, backgroundColor: THEME.divider },
 

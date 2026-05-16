@@ -48,46 +48,45 @@ export default function EditProfileScreen() {
 
       if (response.ok) {
         const updatedUser = await response.json();
-        // Update local storage
         await saveItem('userData', JSON.stringify(updatedUser));
         router.replace('/(tabs)/profile?updated=true');
       } else {
-        alert("فشل تحديث البيانات.");
+        alert("Failed to update data.");
       }
     } catch (err) {
-      alert("حدث خطأ في الاتصال.");
+      alert("Connection error.");
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
       <Stack.Screen options={{ 
         headerShown: true, 
-        headerTitle: "", // Disable default title
+        headerTitle: "",
         headerStyle: { backgroundColor: '#E65A2A' },
         headerShadowVisible: false,
         headerTintColor: '#FFFFFF',
-        headerRight: () => ( 
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, gap: 12 }}>
+        headerLeft: () => ( 
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10, gap: 12 }}>
             <TouchableOpacity 
               onPress={() => router.back()} 
               style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
             >
+              <MaterialCommunityIcons name="arrow-left" size={22} color="#FFFFFF" />
               <Text style={{ 
                 color: '#FFFFFF', 
                 fontSize: 16, 
                 fontWeight: 'bold',
                 fontFamily: Typography.fonts.bold
               }}>
-                تعديل الملف الشخصي
+                Edit Profile
               </Text>
-              <MaterialCommunityIcons name="arrow-right" size={22} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         ),
-        headerLeft: () => null,
+        headerRight: () => null,
       }} />
       
       <KeyboardAvoidingView 
@@ -95,14 +94,14 @@ export default function EditProfileScreen() {
         style={styles.content}
       >
         <View style={styles.form}>
-          <Text style={styles.label}>الاسم الكامل</Text>
+          <Text style={styles.label}>Full Name</Text>
           <View style={styles.inputContainer}>
             <MaterialCommunityIcons name="account-outline" size={20} color={THEME.secondaryText} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
               value={name}
               onChangeText={setName}
-              placeholder="أدخل اسمك الجديد"
+              placeholder="Enter your new name"
               placeholderTextColor="#666"
               autoFocus
             />
@@ -116,7 +115,7 @@ export default function EditProfileScreen() {
             {isSaving ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <><MaterialCommunityIcons name="check-circle" size={20} color={THEME.white} /><Text style={styles.updateButtonText}>حفظ التغييرات</Text></>
+              <><MaterialCommunityIcons name="check-circle" size={20} color={THEME.white} /><Text style={styles.updateButtonText}>Save Changes</Text></>
             )}
           </TouchableOpacity>
         </View>
@@ -124,7 +123,7 @@ export default function EditProfileScreen() {
         <View style={styles.infoBox}>
           <MaterialCommunityIcons name="information-outline" size={20} color={THEME.secondaryText} />
           <Text style={styles.infoText}>
-            الاسم الذي ستضعه هنا هو الذي سيظهر لزملائك في خطط العمل والمهام المشتركة.
+            The name you enter here will be visible to your colleagues in work plans and shared tasks.
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -149,8 +148,8 @@ function createStyles(THEME: any) {
     color: THEME.secondaryText,
     fontSize: 14,
     marginBottom: 8,
-    textAlign: 'right',
-    marginRight: 4,
+    textAlign: 'left',
+    marginLeft: 4,
     fontFamily: Typography.fonts.medium,
   },
   inputContainer: {
@@ -165,13 +164,13 @@ function createStyles(THEME: any) {
     marginBottom: 24,
   },
   inputIcon: {
-    marginLeft: 12,
+    marginRight: 12,
   },
   input: {
     flex: 1,
     color: THEME.text,
     fontSize: 16,
-    textAlign: 'right',
+    textAlign: 'left',
     fontFamily: Typography.fonts.regular,
   },
   updateButton: {
@@ -207,7 +206,7 @@ function createStyles(THEME: any) {
     flex: 1,
     color: THEME.secondaryText,
     fontSize: 13,
-    textAlign: 'right',
+    textAlign: 'left',
     lineHeight: 20,
     fontFamily: Typography.fonts.regular,
   },

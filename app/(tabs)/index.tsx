@@ -15,18 +15,16 @@ import { useAppTheme } from '../../constants/ThemeContext';
 
 import { BASE_URL } from '../../constants/API';
 
-// ── Translation helpers ───────────────────────────────────────────────────────
-const REPEAT_UNIT_AR: Record<string, string> = {
-  DAILY: 'يوم', WEEKLY: 'أسبوع', MONTHLY: 'شهر', YEARLY: 'سنة',
+const REPEAT_UNIT_EN: Record<string, string> = {
+  DAILY: 'day', WEEKLY: 'week', MONTHLY: 'month', YEARLY: 'year',
 };
-const EXPECTED_TIME_AR: Record<string, string> = {
-  MORNING: 'صباحاً', AFTERNOON: 'ظهراً', EVENING: 'مساءً', NIGHT: 'ليلاً',
+const EXPECTED_TIME_EN: Record<string, string> = {
+  MORNING: 'Morning', AFTERNOON: 'Afternoon', EVENING: 'Evening', NIGHT: 'Night',
 };
 const EXPECTED_TIME_ICON: Record<string, string> = {
   MORNING: '🌅', AFTERNOON: '☀️', EVENING: '🌆', NIGHT: '🌙',
 };
 
-// ── Task Card ─────────────────────────────────────────────────────────────────
 function TaskCard({ task }: { task: any }) {
   const { theme: THEME } = useAppTheme();
   const styles = useMemo(() => createStyles(THEME), [THEME]);
@@ -45,10 +43,8 @@ function TaskCard({ task }: { task: any }) {
   const timeDisplay = task.startDate
     ? { icon: '📅', text: formatDateShort(task.startDate) }
     : task.expectedTime
-    ? { icon: EXPECTED_TIME_ICON[task.expectedTime] || '🕐', text: EXPECTED_TIME_AR[task.expectedTime] || task.expectedTime }
+    ? { icon: EXPECTED_TIME_ICON[task.expectedTime] || '🕐', text: EXPECTED_TIME_EN[task.expectedTime] || task.expectedTime }
     : null;
-
-  // Dim the card instead of changing background color if completed
 
   return (
     <View style={[styles.card, isEffectivelyCompleted && styles.cardDone]}>
@@ -63,12 +59,11 @@ function TaskCard({ task }: { task: any }) {
         onPress={() => router.push({ pathname: '/task/[id]', params: { id: task.todoId } } as any)}
         style={styles.cardTouch}
       >
-      {/* Row 1: Title (Right) and Repeat Badge (Left) */}
       <View style={styles.cardHeader}>
         {hasRepeat ? (
           <View style={styles.repeatBadge}>
             <Text style={styles.repeatText}>
-              كل {task.repeatInterval} {REPEAT_UNIT_AR[task.repeatUnit] || task.repeatUnit}
+              Every {task.repeatInterval} {REPEAT_UNIT_EN[task.repeatUnit] || task.repeatUnit}
             </Text>
           </View>
         ) : <View style={{ width: 4 }} />}
@@ -78,12 +73,10 @@ function TaskCard({ task }: { task: any }) {
         </Text>
       </View>
 
-      {/* Row 2: Description */}
       {task.description ? (
         <Text style={styles.desc} numberOfLines={2}>{task.description}</Text>
       ) : null}
 
-      {/* Row 3: Footer (Status & Category on Right, Time on Left) */}
       <View style={styles.cardFooter}>
         <View style={styles.footerLeft}>
           {timeDisplay && (
@@ -103,7 +96,7 @@ function TaskCard({ task }: { task: any }) {
           <View style={[styles.statusBadge, isEffectivelyCompleted && styles.statusBadgeDone]}>
             {isEffectivelyCompleted ? <MaterialCommunityIcons name="check-circle" size={14} color={THEME.brand} /> : <MaterialCommunityIcons name="clock-outline" size={14} color={THEME.brand} />}
             <Text style={[styles.statusText, { color: THEME.brand }]}>
-              {isEffectivelyCompleted ? 'مكتملة' : 'قيد الانتظار'}
+              {isEffectivelyCompleted ? 'Completed' : 'Pending'}
             </Text>
           </View>
         </View>
@@ -113,7 +106,6 @@ function TaskCard({ task }: { task: any }) {
   );
 }
 
-// ── Screen ────────────────────────────────────────────────────────────────────
 export default function TasksScreen() {
   const router = useRouter();
   const [tasks, setTasks]         = useState<any[]>([]);
@@ -155,17 +147,16 @@ export default function TasksScreen() {
       if (res.ok) {
         setTasks(await res.json());
       } else {
-        setError('فشل تحميل المهام');
+        setError('Failed to load tasks');
       }
     } catch {
-      setError('تعذّر الاتصال بالسيرفر');
+      setError('Server connection failed');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
   };
 
-  // Fetch when returning to screen or when category changes
   useFocusEffect(useCallback(() => { 
     fetchCategories();
     fetchTasks(false, selectedCategory); 
@@ -185,19 +176,18 @@ export default function TasksScreen() {
   const completed = tasks.filter(t => isTaskCompleted(t) && filterBySearch(t));
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
       <LinearGradient
         colors={THEME.pageGradient as [string, string]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
-      {/* Search */}
       <View style={styles.searchContainer}>
         <MaterialCommunityIcons name="magnify" size={18} color={THEME.secondaryText} />
         <TextInput
           style={styles.searchInput}
-          placeholder="ابحث عن مهمة..."
+          placeholder="Search for a task..."
           placeholderTextColor={THEME.disabledText}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -208,38 +198,37 @@ export default function TasksScreen() {
           </TouchableOpacity>
         ) : null}
       </View>
-      {/* Category Filter */}
       <View style={styles.filterContainer}>
         <View style={{ flex: 1 }} />
         <TouchableOpacity style={styles.catDropdown} onPress={() => setCatFiltering(true)}>
           <MaterialCommunityIcons name="folder-outline" size={16} color={THEME.text} />
           <Text style={styles.catDropdownText}>
-            {selectedCategory ? categories.find(c => c.categoryId === selectedCategory)?.name || 'الكل' : 'الكل'}
+            {selectedCategory ? categories.find(c => c.categoryId === selectedCategory)?.name || 'All' : 'All'}
           </Text>
           <MaterialCommunityIcons name="chevron-down" size={16} color={THEME.secondaryText} />
         </TouchableOpacity>
-        <Text style={styles.filterLabel}>فلتر:</Text>
+        <Text style={styles.filterLabel}>Filter:</Text>
       </View>
 
       <Modal visible={catFiltering} transparent animationType="fade" onRequestClose={() => setCatFiltering(false)}>
         <Pressable style={styles.overlay} onPress={() => setCatFiltering(false)}>
           <Pressable style={styles.catDropdownModal} onPress={e => e.stopPropagation()}>
             <View style={styles.catDropdownHdr}>
-              <Text style={styles.catDropdownTitle}>اختر تصنيف</Text>
+              <Text style={styles.catDropdownTitle}>Select Category</Text>
               <TouchableOpacity onPress={() => setCatFiltering(false)}>
                 <MaterialCommunityIcons name="close" size={22} color={THEME.text} />
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.catDropdownOption} onPress={() => { setSelectedCategory(null); setCatFiltering(false); }}>
               <MaterialCommunityIcons name="grid" size={18} color={THEME.brand} />
-              <Text style={styles.catDropdownOptText}>الكل</Text>
-              {selectedCategory === null && <MaterialCommunityIcons name="check-circle" size={18} color={THEME.brand} style={{ marginLeft: 'auto' }} />}
+              <Text style={styles.catDropdownOptText}>All</Text>
+              {selectedCategory === null && <MaterialCommunityIcons name="check-circle" size={18} color={THEME.brand} style={{ marginRight: 'auto' }} />}
             </TouchableOpacity>
             {categories.map(cat => (
               <TouchableOpacity key={cat.categoryId} style={styles.catDropdownOption} onPress={() => { setSelectedCategory(cat.categoryId); setCatFiltering(false); }}>
                 <MaterialCommunityIcons name="folder-outline" size={18} color={THEME.brand} />
                 <Text style={styles.catDropdownOptText}>{cat.name}</Text>
-                {selectedCategory === cat.categoryId && <MaterialCommunityIcons name="check-circle" size={18} color={THEME.brand} style={{ marginLeft: 'auto' }} />}
+                {selectedCategory === cat.categoryId && <MaterialCommunityIcons name="check-circle" size={18} color={THEME.brand} style={{ marginRight: 'auto' }} />}
               </TouchableOpacity>
             ))}
           </Pressable>
@@ -255,7 +244,7 @@ export default function TasksScreen() {
           <MaterialCommunityIcons name="cloud-off-outline" size={60} color={THEME.muted} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => fetchTasks()}>
-            <Text style={styles.retryText}>إعادة المحاولة</Text>
+            <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -273,34 +262,32 @@ export default function TasksScreen() {
           {tasks.length === 0 && !searchQuery ? (
             <View style={styles.center}>
               <MaterialCommunityIcons name="clipboard-text-outline" size={72} color={THEME.muted} />
-              <Text style={styles.emptyTitle}>لا توجد مهام بعد</Text>
-              <Text style={styles.emptySubtitle}>اضغط + لإضافة أولى مهامك</Text>
+              <Text style={styles.emptyTitle}>No tasks yet</Text>
+              <Text style={styles.emptySubtitle}>Press + to add your first task</Text>
             </View>
           ) : searchQuery && pending.length === 0 && completed.length === 0 ? (
             <View style={styles.center}>
               <MaterialCommunityIcons name="magnify" size={72} color={THEME.muted} />
-              <Text style={styles.emptyTitle}>لا توجد نتائج</Text>
-              <Text style={styles.emptySubtitle}>لا توجد مهام تطابق بحث "{searchQuery}"</Text>
+              <Text style={styles.emptyTitle}>No results</Text>
+              <Text style={styles.emptySubtitle}>No tasks matching "{searchQuery}"</Text>
             </View>
           ) : (
             <>
-              {/* Pending tasks */}
               {pending.length > 0 && (
                 <>
                   <View style={styles.sectionHeader}>
                     <Text style={styles.sectionCount}>{pending.length}</Text>
-                    <Text style={styles.sectionTitle}>المهام القادمة</Text>
+                    <Text style={styles.sectionTitle}>Upcoming Tasks</Text>
                   </View>
                   {pending.map(t => <TaskCard key={t.todoId} task={t} />)}
                 </>
               )}
 
-              {/* Completed tasks */}
               {completed.length > 0 && (
                 <>
                   <View style={[styles.sectionHeader, { marginTop: 32 }]}>
                     <Text style={styles.sectionCount}>{completed.length}</Text>
-                    <Text style={[styles.sectionTitle, { color: THEME.brand }]}>المنجزة</Text>
+                    <Text style={[styles.sectionTitle, { color: THEME.brand }]}>Completed</Text>
                   </View>
                   {completed.map(t => <TaskCard key={t.todoId} task={t} />)}
                 </>
@@ -312,7 +299,6 @@ export default function TasksScreen() {
         </ScrollView>
       )}
 
-      {/* FAB */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => router.push('/add-todo')}
@@ -325,14 +311,12 @@ export default function TasksScreen() {
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
 function createStyles(THEME: any) {
   return StyleSheet.create({
   container: { flex: 1, backgroundColor: THEME.background },
   scroll: { padding: 16, flexGrow: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80, gap: 12 },
 
-  // Filters
   filterContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -361,7 +345,7 @@ function createStyles(THEME: any) {
     color: THEME.text,
     fontSize: 14,
     fontFamily: Typography.fonts.medium,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   catDropdownModal: {
     width: '80%',
@@ -373,7 +357,7 @@ function createStyles(THEME: any) {
     maxHeight: 400,
   },
   catDropdownHdr: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
@@ -384,7 +368,7 @@ function createStyles(THEME: any) {
     fontFamily: Typography.fonts.bold,
   },
   catDropdownOption: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     gap: 10,
@@ -396,7 +380,7 @@ function createStyles(THEME: any) {
     color: THEME.text,
     fontSize: 14,
     fontFamily: Typography.fonts.regular,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   overlay: {
     flex: 1, justifyContent: 'center', alignItems: 'center',
@@ -425,7 +409,7 @@ function createStyles(THEME: any) {
     color: THEME.text,
     fontSize: 14,
     fontFamily: Typography.fonts.regular,
-    textAlign: 'right',
+    textAlign: 'left',
     outlineStyle: 'none' as any,
   },
   searchClearBtn: { padding: 6 },
@@ -460,9 +444,8 @@ function createStyles(THEME: any) {
     color: THEME.white,
   },
 
-  // Section headers
   sectionHeader: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 12,
@@ -483,7 +466,6 @@ function createStyles(THEME: any) {
     overflow: 'hidden',
   },
 
-  // Card
   card: {
     borderRadius: 18,
     padding: 16,
@@ -513,7 +495,6 @@ function createStyles(THEME: any) {
     backgroundColor: 'rgba(216,67,21,0.03)',
   },
 
-  // Card header row
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -525,14 +506,13 @@ function createStyles(THEME: any) {
     color: THEME.text,
     fontFamily: Typography.fonts.bold,
     fontSize: 16,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   titleDone: {
     color: THEME.secondaryText,
     textDecorationLine: 'line-through',
   },
 
-  // Repeat badge
   repeatBadge: {
     backgroundColor: 'rgba(216,67,21,0.12)',
     borderRadius: 8,
@@ -547,16 +527,14 @@ function createStyles(THEME: any) {
     fontSize: 11,
   },
 
-  // Description
   desc: {
     color: THEME.text,
     fontFamily: Typography.fonts.regular,
     fontSize: 14,
-    textAlign: 'right',
+    textAlign: 'left',
     lineHeight: 20,
   },
 
-  // Card Footer
   cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -576,7 +554,6 @@ function createStyles(THEME: any) {
     alignItems: 'center',
   },
 
-  // Status Badge
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -594,7 +571,6 @@ function createStyles(THEME: any) {
     fontSize: 12,
   },
 
-  // Category Badge
   categoryBadge: {
     backgroundColor: THEME.muted,
     paddingHorizontal: 8,
@@ -607,7 +583,6 @@ function createStyles(THEME: any) {
     fontSize: 12,
   },
 
-  // Time row
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -620,7 +595,6 @@ function createStyles(THEME: any) {
     fontSize: 12,
   },
 
-  // Empty / error
   emptyTitle: {
     color: THEME.secondaryText,
     fontFamily: Typography.fonts.bold,
@@ -648,7 +622,6 @@ function createStyles(THEME: any) {
     color: THEME.white, fontFamily: Typography.fonts.bold, fontSize: 14,
   },
 
-  // FAB
   fab: {
      position: 'absolute',
      bottom: 76,

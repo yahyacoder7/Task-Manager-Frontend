@@ -33,12 +33,12 @@ export const formatDateOnly = (iso: string) => {
 };
 
 export const formatDateArabic = (iso: string) => {
-  if (!iso) return 'غير معروف';
+  if (!iso) return 'Unknown';
   try {
     const [datePart] = iso.split('T');
     const [y, m, d] = datePart.split('-').map(Number);
     const date = new Date(y, m - 1, d);
-    return date.toLocaleDateString('ar-EG', {
+    return date.toLocaleDateString('en-US', {
       year: 'numeric', month: 'long', day: 'numeric',
     });
   } catch { return iso; }

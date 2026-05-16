@@ -14,11 +14,11 @@ import { useAppTheme } from '../../constants/ThemeContext';
 
 import { BASE_URL } from '../../constants/API';
 
-const REPEAT_UNIT_AR: Record<string, string> = {
-  DAILY: 'يوم', WEEKLY: 'أسبوع', MONTHLY: 'شهر', YEARLY: 'سنة',
+const REPEAT_UNIT_EN: Record<string, string> = {
+  DAILY: 'day', WEEKLY: 'week', MONTHLY: 'month', YEARLY: 'year',
 };
-const EXPECTED_TIME_AR: Record<string, string> = {
-  MORNING: 'صباحاً', AFTERNOON: 'ظهراً', EVENING: 'مساءً', NIGHT: 'ليلاً',
+const EXPECTED_TIME_EN: Record<string, string> = {
+  MORNING: 'Morning', AFTERNOON: 'Afternoon', EVENING: 'Evening', NIGHT: 'Night',
 };
 
 export default function TaskDetailsScreen() {
@@ -57,7 +57,6 @@ export default function TaskDetailsScreen() {
       if (res.ok) {
         setTask(await res.json());
         
-        // Fetch AI advice
         try {
           const adviceRes = await fetch(`${BASE_URL}/ai/get-task-advice/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -67,11 +66,11 @@ export default function TaskDetailsScreen() {
           }
         } catch {}
       } else {
-        Alert.alert('خطأ', 'تعذر تحميل تفاصيل المهمة');
+        Alert.alert('Error', 'Unable to load task details');
         router.back();
       }
     } catch {
-      Alert.alert('خطأ', 'مشكلة في الاتصال بالخادم');
+      Alert.alert('Error', 'Server connection problem');
     } finally {
       setIsLoading(false);
     }
@@ -88,14 +87,13 @@ export default function TaskDetailsScreen() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        // Fetch the fresh data with all relations (categories, completions) from the server
         await fetchTask();
       } else {
         const errData = await res.json().catch(() => ({}));
-        Alert.alert('خطأ', errData.message || 'تعذر إكمال المهمة');
+        Alert.alert('Error', errData.message || 'Unable to complete task');
       }
     } catch {
-      Alert.alert('خطأ', 'مشكلة في الاتصال بالخادم');
+      Alert.alert('Error', 'Server connection problem');
     } finally {
       setIsCompleting(false);
     }
@@ -111,7 +109,7 @@ export default function TaskDetailsScreen() {
     const token = await getItem('userToken');
     
     if (!token) {
-      Alert.alert('خطأ', 'لا يوجد توكن');
+      Alert.alert('Error', 'No token found');
       setIsDeleting(false);
       return;
     }
@@ -125,10 +123,10 @@ export default function TaskDetailsScreen() {
       if (res.ok) {
         router.replace('/(tabs)');
       } else {
-        Alert.alert('خطأ', 'فشل الحذف');
+        Alert.alert('Error', 'Delete failed');
       }
     } catch (e) {
-      Alert.alert('خطأ', 'مشكلة في الاتصال');
+      Alert.alert('Error', 'Connection problem');
     }
     setIsDeleting(false);
   };
@@ -139,7 +137,7 @@ export default function TaskDetailsScreen() {
 
   if (isLoading || !task) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <SafeAreaView style={[styles.centerContainer, { direction: 'ltr' } as any]}>
         <ActivityIndicator size="large" color={THEME.brand} />
       </SafeAreaView>
     );
@@ -148,7 +146,7 @@ export default function TaskDetailsScreen() {
   const completed = isEffectivelyCompleted();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
       <LinearGradient
         colors={THEME.pageGradient as [string, string]}
         start={{ x: 0, y: 0 }}
@@ -159,13 +157,13 @@ export default function TaskDetailsScreen() {
         headerTitle: '',
         headerStyle: { backgroundColor: '#E65A2A' },
         headerShadowVisible: false,
-        headerRight: () => (
+        headerLeft: () => (
           <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-            <Text style={styles.headerTitle}>تفاصيل المهمة</Text>
-            <MaterialCommunityIcons name="arrow-right" size={24} color={THEME.white} />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={THEME.white} />
+            <Text style={styles.headerTitle}>Task Details</Text>
           </TouchableOpacity>
         ),
-        headerLeft: () => (
+        headerRight: () => (
           <TouchableOpacity onPress={showTaskOptions} style={styles.optionsBtn}>
             <MaterialCommunityIcons name="dots-vertical" size={24} color={THEME.white} />
           </TouchableOpacity>
@@ -174,13 +172,11 @@ export default function TaskDetailsScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         
-        {/* Header Section */}
         <View style={styles.mainCard}>
-          {/* Status Badge */}
           <View style={[styles.statusBadge, completed && styles.statusBadgeDone]}>
             <MaterialCommunityIcons name={completed ? "check-circle" : "clock-outline"} size={16} color={THEME.brand} />
             <Text style={[styles.statusText, { color: THEME.brand }]}>
-              {completed ? 'مهمة مكتملة' : 'قيد الانتظار'}
+              {completed ? 'Task Completed' : 'Pending'}
             </Text>
           </View>
 
@@ -190,27 +186,25 @@ export default function TaskDetailsScreen() {
           ) : null}
         </View>
 
-        {/* AI Advice Section */}
         {aiAdvice && (
           <View style={styles.adviceCard}>
             <View style={styles.adviceRow}>
               <View style={styles.adviceIconBox}>
                 <MaterialCommunityIcons name="lightbulb-outline" size={16} color={THEME.brand} />
               </View>
-              <Text style={styles.adviceTitle}>نصيحة لمهمتك</Text>
+              <Text style={styles.adviceTitle}>Task Advice</Text>
             </View>
             <Text style={styles.adviceText}>{aiAdvice.advice}</Text>
           </View>
         )}
 
-        {/* Details Section */}
         <View style={styles.detailsCard}>
           
           {task.workplan && (
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
                 <MaterialCommunityIcons name="briefcase-outline" size={20} color={THEME.secondaryText} />
-                <Text style={styles.detailLabel}>خطة العمل</Text>
+                <Text style={styles.detailLabel}>Work Plan</Text>
               </View>
               <Text style={styles.detailValue}>{task.workplan.name}</Text>
             </View>
@@ -220,7 +214,7 @@ export default function TaskDetailsScreen() {
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
                 <MaterialCommunityIcons name="folder-open-outline" size={20} color={THEME.secondaryText} />
-                <Text style={styles.detailLabel}>التصنيف</Text>
+                <Text style={styles.detailLabel}>Category</Text>
               </View>
               <Text style={styles.detailValue}>{task.category.name}</Text>
             </View>
@@ -230,10 +224,10 @@ export default function TaskDetailsScreen() {
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
                 <MaterialCommunityIcons name="repeat" size={20} color={THEME.secondaryText} />
-                <Text style={styles.detailLabel}>التكرار</Text>
+                <Text style={styles.detailLabel}>Repeat</Text>
               </View>
               <View style={styles.repeatBadge}>
-                <Text style={styles.repeatBadgeText}>كل {task.repeatInterval} {REPEAT_UNIT_AR[task.repeatUnit]}</Text>
+                <Text style={styles.repeatBadgeText}>Every {task.repeatInterval} {REPEAT_UNIT_EN[task.repeatUnit]}</Text>
               </View>
             </View>
           )}
@@ -242,7 +236,7 @@ export default function TaskDetailsScreen() {
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
                 <MaterialCommunityIcons name="calendar-outline" size={20} color={THEME.secondaryText} />
-                <Text style={styles.detailLabel}>تاريخ البدء</Text>
+                <Text style={styles.detailLabel}>Start Date</Text>
               </View>
               <Text style={styles.detailValue} numberOfLines={2}>
                 {formatDateOnly(task.startDate)}
@@ -254,16 +248,16 @@ export default function TaskDetailsScreen() {
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
                 <MaterialCommunityIcons name="weather-partly-cloudy" size={20} color={THEME.secondaryText} />
-                <Text style={styles.detailLabel}>الوقت التقريبي</Text>
+                <Text style={styles.detailLabel}>Approximate Time</Text>
               </View>
-              <Text style={styles.detailValue}>{EXPECTED_TIME_AR[task.expectedTime]}</Text>
+              <Text style={styles.detailValue}>{EXPECTED_TIME_EN[task.expectedTime]}</Text>
             </View>
           )}
 
           <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
             <View style={styles.detailLeft}>
               <MaterialCommunityIcons name="plus-circle" size={20} color={THEME.secondaryText} />
-              <Text style={styles.detailLabel}>تاريخ الإنشاء</Text>
+              <Text style={styles.detailLabel}>Created</Text>
             </View>
             <Text style={[styles.detailValue, { fontSize: 12 }]} numberOfLines={1}>
               {formatDateFull(task.createdAt)}
@@ -271,7 +265,6 @@ export default function TaskDetailsScreen() {
           </View>
         </View>
 
-        {/* Completion Logs Accordion */}
         {task.taskcompletions && task.taskcompletions.length > 0 && (
           <View style={styles.accordionContainer}>
             <TouchableOpacity 
@@ -283,7 +276,7 @@ export default function TaskDetailsScreen() {
                 <View style={styles.logsBadge}>
                   <Text style={styles.logsBadgeText}>{task.taskcompletions.length}</Text>
                 </View>
-                <Text style={styles.accordionTitle}>سجلات الإكمال</Text>
+                <Text style={styles.accordionTitle}>Completion Logs</Text>
               </View>
               <MaterialCommunityIcons name={logsOpen ? "chevron-up" : "chevron-down"} size={20} color={THEME.text} />
             </TouchableOpacity>
@@ -303,7 +296,6 @@ export default function TaskDetailsScreen() {
 
       </ScrollView>
 
-      {/* Complete Action Button */}
       <View style={styles.bottomBar}>
         <TouchableOpacity 
           style={[styles.completeBtn, completed && styles.completeBtnDone]} 
@@ -317,19 +309,18 @@ export default function TaskDetailsScreen() {
             <>
               {completed ? <MaterialCommunityIcons name="check-circle" size={22} color={THEME.brand} /> : <MaterialCommunityIcons name="check" size={22} color={THEME.white} />}
               <Text style={[styles.completeBtnText, completed && { color: THEME.brand }]}>
-                {completed ? 'تم إنجاز المهمة' : 'إكمال المهمة'}
+                {completed ? 'Task Completed' : 'Complete Task'}
               </Text>
             </>
           )}
         </TouchableOpacity>
       </View>
 
-      {/* Options Modal */}
       <Modal visible={optionsModalVisible} transparent animationType="fade" onRequestClose={() => setOptionsModalVisible(false)}>
         <Pressable style={styles.overlay} onPress={() => setOptionsModalVisible(false)}>
           <Pressable style={styles.modalBox} onPress={e => e.stopPropagation()}>
             <View style={styles.modalHdr}>
-              <Text style={styles.modalTitle}>خيارات المهمة</Text>
+              <Text style={styles.modalTitle}>Task Options</Text>
               <TouchableOpacity onPress={() => setOptionsModalVisible(false)}>
                 <MaterialCommunityIcons name="close" size={22} color={THEME.text} />
               </TouchableOpacity>
@@ -346,8 +337,8 @@ export default function TaskDetailsScreen() {
                 <MaterialCommunityIcons name="file-document-outline" size={20} color={THEME.brand} />
               </View>
               <View style={styles.modalActionContent}>
-                <Text style={styles.modalActionText}>تعديل المهمة</Text>
-                <Text style={styles.modalActionSub}>تعديل العنوان، التصنيف، الوقت وغيرها</Text>
+                <Text style={styles.modalActionText}>Edit Task</Text>
+                <Text style={styles.modalActionSub}>Edit title, category, time and more</Text>
               </View>
             </TouchableOpacity>
             
@@ -364,38 +355,37 @@ export default function TaskDetailsScreen() {
                 <MaterialCommunityIcons name="delete-outline" size={20} color={THEME.danger} />
               </View>
               <View style={styles.modalActionContent}>
-                <Text style={[styles.modalActionText, { color: THEME.danger }]}>حذف المهمة</Text>
-                <Text style={styles.modalActionSub}>هذا الإجراء لا يمكن التراجع عنه</Text>
+                <Text style={[styles.modalActionText, { color: THEME.danger }]}>Delete Task</Text>
+                <Text style={styles.modalActionSub}>This action cannot be undone</Text>
               </View>
             </TouchableOpacity>
           </Pressable>
         </Pressable>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
       <Modal visible={confirmDeleteVisible} transparent animationType="fade" onRequestClose={() => setConfirmDeleteVisible(false)}>
         <Pressable style={styles.overlay} onPress={() => setConfirmDeleteVisible(false)}>
           <View style={styles.confirmModalBox}>
             <View style={styles.confirmIconCircle}>
               <MaterialCommunityIcons name="alert-outline" size={40} color={THEME.danger} />
             </View>
-            <Text style={styles.confirmTitle}>حذف المهمة</Text>
+            <Text style={styles.confirmTitle}>Delete Task</Text>
             <Text style={styles.confirmMessage}>
-              هل أنت متأكد من حذف هذه المهمة نهائياً؟ لا يمكن التراجع عن هذا الإجراء.
+              Are you sure you want to permanently delete this task? This action cannot be undone.
             </Text>
             <View style={styles.confirmButtons}>
               <TouchableOpacity 
                 style={styles.cancelBtn} 
                 onPress={() => setConfirmDeleteVisible(false)}
               >
-                <Text style={styles.cancelBtnText}>إلغاء</Text>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.deleteBtn} 
                 onPress={performDelete}
               >
                 <MaterialCommunityIcons name="delete-outline" size={18} color={THEME.white} />
-                <Text style={styles.deleteBtnText}>حذف</Text>
+                <Text style={styles.deleteBtnText}>Delete</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -412,7 +402,7 @@ function createStyles(THEME: any) {
   centerContainer: { flex: 1, backgroundColor: THEME.background, justifyContent: 'center', alignItems: 'center' },
   scroll: { padding: 16, paddingTop: 16, paddingBottom: 100 },
   
-  headerBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, marginRight: 10 },
+  headerBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, marginLeft: 10 },
   headerTitle: { color: THEME.white, fontSize: 18, fontFamily: Typography.fonts.bold },
   optionsBtn: { paddingHorizontal: 16, paddingVertical: 8 },
 
@@ -437,8 +427,8 @@ function createStyles(THEME: any) {
   },
   statusBadgeDone: { backgroundColor: 'rgba(216,67,21,0.05)' },
   statusText: { fontFamily: Typography.fonts.bold, fontSize: 13 },
-  title: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 22, marginBottom: 8, textAlign: 'right' },
-  desc: { color: THEME.secondaryText, fontFamily: Typography.fonts.regular, fontSize: 15, lineHeight: 22, textAlign: 'right' },
+  title: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 22, marginBottom: 8, textAlign: 'left' },
+  desc: { color: THEME.secondaryText, fontFamily: Typography.fonts.regular, fontSize: 15, lineHeight: 22, textAlign: 'left' },
 
   adviceCard: {
     backgroundColor: 'rgba(216,67,21,0.08)',
@@ -449,7 +439,7 @@ function createStyles(THEME: any) {
     borderColor: 'rgba(216,67,21,0.2)',
   },
   adviceRow: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     marginBottom: 12,
@@ -466,14 +456,14 @@ function createStyles(THEME: any) {
     color: THEME.brand,
     fontFamily: Typography.fonts.bold,
     fontSize: 15,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   adviceText: {
     color: THEME.text,
     fontFamily: Typography.fonts.regular,
     fontSize: 14,
     lineHeight: 24,
-    textAlign: 'right',
+    textAlign: 'left',
     opacity: 0.9,
   },
 
@@ -556,18 +546,18 @@ function createStyles(THEME: any) {
     borderRadius: 22, padding: 20, borderWidth: 1, borderColor: THEME.divider,
   },
   modalHdr: {
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     marginBottom: 24,
   },
   modalTitle: { color: THEME.text, fontSize: 17, fontFamily: Typography.fonts.bold },
-  modalActionBtn: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  modalActionBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
   modalActionIcon: {
     width: 40, height: 40, borderRadius: 12,
     justifyContent: 'center', alignItems: 'center',
   },
   modalActionContent: { flex: 1 },
-  modalActionText: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 15, textAlign: 'right' },
-  modalActionSub: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, marginTop: 2, textAlign: 'right' },
+  modalActionText: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 15, textAlign: 'left' },
+  modalActionSub: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, marginTop: 2, textAlign: 'left' },
 
   confirmModalBox: {
     width: '85%',

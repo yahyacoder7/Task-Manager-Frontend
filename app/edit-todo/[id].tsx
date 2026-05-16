@@ -14,14 +14,14 @@ import SmartDateTimePicker from '../../components/SmartDateTimePicker';
 import { BASE_URL } from '../../constants/API';
 
 const TIME_OPTS = [
-  { label: 'صباحاً', sub: 'من 5ص إلى 12ظهراً', value: 'MORNING',   icon: '🌅' },
-  { label: 'ظهراً',  sub: 'من 12ظ إلى 5مساءً', value: 'AFTERNOON', icon: '☀️' },
-  { label: 'مساءً',  sub: 'من 5م إلى 9مساءً', value: 'EVENING',   icon: '🌆' },
-  { label: 'ليلاً',  sub: 'من 9م إلى 5صباحاً', value: 'NIGHT',     icon: '🌙' },
+  { label: 'Morning', sub: '5 AM to 12 PM', value: 'MORNING',   icon: '🌅' },
+  { label: 'Afternoon',  sub: '12 PM to 5 PM', value: 'AFTERNOON', icon: '☀️' },
+  { label: 'Evening',  sub: '5 PM to 9 PM', value: 'EVENING',   icon: '🌆' },
+  { label: 'Night',  sub: '9 PM to 5 AM', value: 'NIGHT',     icon: '🌙' },
 ];
 const REPEAT_OPTS = [
-  { label: 'يوم', value: 'DAILY' }, { label: 'أسبوع', value: 'WEEKLY' },
-  { label: 'شهر', value: 'MONTHLY' }, { label: 'سنة', value: 'YEARLY' },
+  { label: 'Day', value: 'DAILY' }, { label: 'Week', value: 'WEEKLY' },
+  { label: 'Month', value: 'MONTHLY' }, { label: 'Year', value: 'YEARLY' },
 ];
 
 type FieldErrors = { title?: string; startDate?: string; repeatInterval?: string; general?: string };
@@ -84,11 +84,11 @@ export default function EditTodoScreen() {
         setCategoryId(task.categoryId || null);
         setWorkplanId(task.workplanId || null);
       } else {
-        Alert.alert('خطأ', 'تعذر جلب بيانات المهمة');
+        Alert.alert('Error', 'Unable to load task data');
         router.back();
       }
     } catch { 
-      Alert.alert('خطأ', 'مشكلة في الاتصال بالخادم');
+      Alert.alert('Error', 'Server connection problem');
     } finally { 
       setIsLoadingData(false); 
     }
@@ -110,15 +110,15 @@ export default function EditTodoScreen() {
         setCategoryId(cat.categoryId);
         setCatModal(false); setNewCatName('');
       } else {
-        Alert.alert('خطأ', 'فشل إضافة التصنيف');
+        Alert.alert('Error', 'Failed to add category');
       }
-    } catch { Alert.alert('خطأ', 'حدث خطأ في الاتصال'); }
+    } catch { Alert.alert('Error', 'Connection error'); }
     finally { setAddingCat(false); }
   };
 
   const parseErrors = (errBody: any): FieldErrors => {
     const msgs: string[] = Array.isArray(errBody?.message)
-      ? errBody.message : [errBody?.message || 'حدث خطأ'];
+      ? errBody.message : [errBody?.message || 'An error occurred'];
     const fe: FieldErrors = {};
     msgs.forEach((m: string) => {
       const low = m.toLowerCase();
@@ -132,18 +132,16 @@ export default function EditTodoScreen() {
 
   const handleUpdate = async () => {
     setFieldErrors({});
-    if (!title.trim()) { setFieldErrors({ title: 'العنوان مطلوب' }); return; }
+    if (!title.trim()) { setFieldErrors({ title: 'Title is required' }); return; }
     setIsSaving(true);
     try {
       const token = await getItem('userToken');
       const payload: Record<string, any> = { title: title.trim() };
       
-      // Send fields explicitly. For string values we trim, for nulls we send null
       payload.description = description.trim() || null;
       payload.expectedTime = expectedTime || null;
       payload.startDate = startDate.trim() || null;
       
-      // Repeat logic exactly matching the user's constraints
       payload.repeatUnit = repeatUnit || null;
       if (repeatUnit) {
         payload.repeatInterval = parseInt(repeatInterval) || 1;
@@ -166,7 +164,7 @@ export default function EditTodoScreen() {
         const errBody = await res.json();
         setFieldErrors(parseErrors(errBody));
       }
-    } catch { setFieldErrors({ general: 'حدث خطأ في الاتصال بالسيرفر' }); }
+    } catch { setFieldErrors({ general: 'Server connection error' }); }
     finally { setIsSaving(false); }
   };
 
@@ -186,25 +184,25 @@ export default function EditTodoScreen() {
 
   if (isLoadingData) {
     return (
-      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center', direction: 'ltr' } as any]}>
         <ActivityIndicator size="large" color={THEME.brand} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
       <Stack.Screen options={{
         headerShown: true, headerTitle: '',
         headerStyle: { backgroundColor: '#E65A2A' },
         headerShadowVisible: false,
-        headerRight: () => (
-          <TouchableOpacity onPress={() => router.back()} style={styles.hdrRight}>
-            <Text style={styles.hdrTitle}>تعديل المهمة</Text>
-            <MaterialCommunityIcons name="close" size={22} color={THEME.white} />
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => router.back()} style={styles.hdrLeft}>
+            <MaterialCommunityIcons name="arrow-left" size={22} color={THEME.white} />
+            <Text style={styles.hdrTitle}>Edit Task</Text>
           </TouchableOpacity>
         ),
-        headerLeft: () => null,
+        headerRight: () => null,
       }} />
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
@@ -217,24 +215,24 @@ export default function EditTodoScreen() {
             </View>
           ) : null}
 
-          <Text style={styles.secTitle}>المعلومات الأساسية</Text>
+          <Text style={styles.secTitle}>Basic Information</Text>
           <TextInput
             style={[styles.input, styles.titleInput, webInput, fieldErrors.title && styles.inputError]}
-            placeholder="عنوان المهمة *" placeholderTextColor="#555"
-            value={title} onChangeText={setTitle} textAlign="right"
+            placeholder="Task Title *" placeholderTextColor="#555"
+            value={title} onChangeText={setTitle} textAlign="left"
           />
           {fieldErrors.title ? <Text style={styles.fieldError}>{fieldErrors.title}</Text> : null}
 
           <TextInput
             style={[styles.input, styles.descInput, webInput]}
-            placeholder="وصف تفصيلي (اختياري)..." placeholderTextColor="#555"
+            placeholder="Detailed description (optional)..." placeholderTextColor="#555"
             value={description} onChangeText={setDescription}
-            multiline textAlign="right"
+            multiline textAlign="left"
           />
 
-          <Text style={styles.secTitle}>وقت البداية</Text>
+          <Text style={styles.secTitle}>Start Time</Text>
           <Text style={[styles.subLabel, timeDisabled && styles.mutedLabel]}>
-            {timeDisabled ? '🔒 الفترة اليومية معطّلة (لديك وقت محدد)' : 'فترة يومية تقريبية:'}
+            {timeDisabled ? '🔒 Time period disabled (you have a specific time)' : 'Approximate time period:'}
           </Text>
           <View style={styles.grid}>
             {TIME_OPTS.map(opt => (
@@ -251,11 +249,11 @@ export default function EditTodoScreen() {
           </View>
 
           <View style={styles.orRow}>
-            <View style={styles.orLine} /><Text style={styles.orText}>أو</Text><View style={styles.orLine} />
+            <View style={styles.orLine} /><Text style={styles.orText}>OR</Text><View style={styles.orLine} />
           </View>
 
           <Text style={[styles.subLabel, dateDisabled && styles.mutedLabel]}>
-            {dateDisabled ? '🔒 التاريخ المحدد معطّل (لديك فترة يومية)' : 'تاريخ ووقت محدد:'}
+            {dateDisabled ? '🔒 Specific date disabled (you have a time period)' : 'Specific date and time:'}
           </Text>
           <SmartDateTimePicker
             value={startDate}
@@ -264,8 +262,8 @@ export default function EditTodoScreen() {
           />
           {fieldErrors.startDate ? <Text style={styles.fieldError}>{fieldErrors.startDate}</Text> : null}
 
-          <Text style={styles.secTitle}>التكرار (اختياري)</Text>
-          <Text style={styles.subLabel}>وحدة التكرار:</Text>
+          <Text style={styles.secTitle}>Repeat (Optional)</Text>
+          <Text style={styles.subLabel}>Repeat unit:</Text>
           <View style={styles.chipsRow}>
             {REPEAT_OPTS.map(opt => (
               <TouchableOpacity
@@ -280,24 +278,24 @@ export default function EditTodoScreen() {
 
           {repeatUnit && (
             <View style={styles.intervalRow}>
-              <Text style={styles.intervalSuffix}>{REPEAT_OPTS.find(o => o.value === repeatUnit)?.label}</Text>
+              <Text style={styles.intervalPrefix}>Repeats every:</Text>
               <TextInput
                 style={[styles.input, styles.intervalInput, webInput, fieldErrors.repeatInterval && styles.inputError]}
                 value={repeatInterval} onChangeText={setRepeatInterval}
                 keyboardType="numeric" textAlign="center"
               />
-              <Text style={styles.intervalPrefix}>يتكرر كل:</Text>
+              <Text style={styles.intervalSuffix}>{REPEAT_OPTS.find(o => o.value === repeatUnit)?.label}</Text>
             </View>
           )}
           {fieldErrors.repeatInterval ? <Text style={styles.fieldError}>{fieldErrors.repeatInterval}</Text> : null}
 
-          <Text style={styles.secTitle}>التصنيف وخطة العمل</Text>
+          <Text style={styles.secTitle}>Category and Work Plan</Text>
 
-          <Text style={styles.subLabel}>التصنيف:</Text>
+          <Text style={styles.subLabel}>Category:</Text>
           <View style={styles.dropdown}>
             <TouchableOpacity style={styles.dropdownTouch} onPress={() => { setCatSearch(''); setCatPicking(true); }} activeOpacity={0.7}>
               <Text style={[styles.dropdownText, !categoryId && styles.dropdownPlaceholder]}>
-                {categoryId ? categories.find(c => c.categoryId === categoryId)?.name || 'اختر تصنيف' : 'اختر تصنيف'}
+                {categoryId ? categories.find(c => c.categoryId === categoryId)?.name || 'Select Category' : 'Select Category'}
               </Text>
             </TouchableOpacity>
             {categoryId ? (
@@ -305,7 +303,7 @@ export default function EditTodoScreen() {
                 <MaterialCommunityIcons name="close-circle" size={18} color={THEME.secondaryText} />
               </TouchableOpacity>
             ) : (
-              <MaterialCommunityIcons name="chevron-down" size={18} color={THEME.secondaryText} style={{ marginLeft: 8 }} />
+              <MaterialCommunityIcons name="chevron-down" size={18} color={THEME.secondaryText} style={{ marginRight: 8 }} />
             )}
           </View>
 
@@ -313,7 +311,7 @@ export default function EditTodoScreen() {
             <Pressable style={styles.overlay} onPress={() => setCatPicking(false)}>
               <Pressable style={styles.dropdownModal} onPress={e => e.stopPropagation()}>
                 <View style={styles.dropdownModalHdr}>
-                  <Text style={styles.dropdownModalTitle}>اختر تصنيف</Text>
+                  <Text style={styles.dropdownModalTitle}>Select Category</Text>
                   <TouchableOpacity onPress={() => setCatPicking(false)}>
                     <MaterialCommunityIcons name="close" size={24} color={THEME.text} />
                   </TouchableOpacity>
@@ -322,7 +320,7 @@ export default function EditTodoScreen() {
                   <MaterialCommunityIcons name="magnify" size={18} color={THEME.secondaryText} />
                   <TextInput
                     style={styles.dropdownSearchInput}
-                    placeholder="ابحث عن تصنيف..."
+                    placeholder="Search for a category..."
                     placeholderTextColor={THEME.disabledText}
                     value={catSearch}
                     onChangeText={setCatSearch}
@@ -341,22 +339,22 @@ export default function EditTodoScreen() {
                       </TouchableOpacity>
                     ))}
                   {categories.filter(c => !catSearch || c.name?.includes(catSearch)).length === 0 && (
-                    <Text style={styles.dropdownEmpty}>لا توجد نتائج</Text>
+                    <Text style={styles.dropdownEmpty}>No results</Text>
                   )}
                 </ScrollView>
                 <TouchableOpacity style={styles.dropdownAdd} onPress={() => { setCatPicking(false); setCatModal(true); }}>
                   <MaterialCommunityIcons name="plus-circle" size={20} color={THEME.brand} />
-                  <Text style={styles.dropdownAddText}>إضافة تصنيف جديد</Text>
+                  <Text style={styles.dropdownAddText}>Add New Category</Text>
                 </TouchableOpacity>
               </Pressable>
             </Pressable>
           </Modal>
 
-          <Text style={[styles.subLabel, { marginTop: 16 }]}>خطة العمل:</Text>
+          <Text style={[styles.subLabel, { marginTop: 16 }]}>Work Plan:</Text>
           <View style={styles.dropdown}>
             <TouchableOpacity style={styles.dropdownTouch} onPress={() => { setWpSearch(''); setWpModal(true); }} activeOpacity={0.7}>
               <Text style={[styles.dropdownText, !workplanId && styles.dropdownPlaceholder]}>
-                {workplanId ? workplans.find(p => p.workplanId === workplanId)?.name || 'بدون خطة' : 'بدون خطة'}
+                {workplanId ? workplans.find(p => p.workplanId === workplanId)?.name || 'No Plan' : 'No Plan'}
               </Text>
             </TouchableOpacity>
             {workplanId ? (
@@ -364,7 +362,7 @@ export default function EditTodoScreen() {
                 <MaterialCommunityIcons name="close-circle" size={18} color={THEME.secondaryText} />
               </TouchableOpacity>
             ) : (
-              <MaterialCommunityIcons name="chevron-down" size={18} color={THEME.secondaryText} style={{ marginLeft: 8 }} />
+              <MaterialCommunityIcons name="chevron-down" size={18} color={THEME.secondaryText} style={{ marginRight: 8 }} />
             )}
           </View>
 
@@ -372,7 +370,7 @@ export default function EditTodoScreen() {
             <Pressable style={styles.overlay} onPress={() => setWpModal(false)}>
               <Pressable style={styles.dropdownModal} onPress={e => e.stopPropagation()}>
                 <View style={styles.dropdownModalHdr}>
-                  <Text style={styles.dropdownModalTitle}>اختر خطة عمل</Text>
+                  <Text style={styles.dropdownModalTitle}>Select Work Plan</Text>
                   <TouchableOpacity onPress={() => setWpModal(false)}>
                     <MaterialCommunityIcons name="close" size={24} color={THEME.text} />
                   </TouchableOpacity>
@@ -381,7 +379,7 @@ export default function EditTodoScreen() {
                   <MaterialCommunityIcons name="magnify" size={18} color={THEME.secondaryText} />
                   <TextInput
                     style={styles.dropdownSearchInput}
-                    placeholder="ابحث عن خطة عمل..."
+                    placeholder="Search for a work plan..."
                     placeholderTextColor={THEME.disabledText}
                     value={wpSearch}
                     onChangeText={setWpSearch}
@@ -400,7 +398,7 @@ export default function EditTodoScreen() {
                       </TouchableOpacity>
                     ))}
                   {workplans.filter(p => !wpSearch || p.name?.includes(wpSearch)).length === 0 && (
-                    <Text style={styles.dropdownEmpty}>لا توجد نتائج</Text>
+                    <Text style={styles.dropdownEmpty}>No results</Text>
                   )}
                 </ScrollView>
               </Pressable>
@@ -416,7 +414,7 @@ export default function EditTodoScreen() {
           {isSaving ? <ActivityIndicator color="#FFF" /> : (
             <>
               <MaterialCommunityIcons name="check-circle" size={22} color="#FFF" />
-              <Text style={styles.saveBtnText}>حفظ التعديلات</Text>
+              <Text style={styles.saveBtnText}>Save Changes</Text>
             </>
           )}
         </TouchableOpacity>
@@ -428,18 +426,18 @@ export default function EditTodoScreen() {
             <TouchableOpacity style={styles.modalX} onPress={() => setCatModal(false)}>
               <MaterialCommunityIcons name="close" size={22} color={THEME.text} />
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>إضافة تصنيف جديد</Text>
+            <Text style={styles.modalTitle}>Add New Category</Text>
             <TextInput
               style={[styles.input, { marginBottom: 20 }, webInput]}
-              placeholder="مثال: عمل، دراسة، صحة..." placeholderTextColor="#555"
-              value={newCatName} onChangeText={setNewCatName} autoFocus textAlign="right"
+              placeholder="e.g., Work, Study, Health..." placeholderTextColor="#555"
+              value={newCatName} onChangeText={setNewCatName} autoFocus textAlign="left"
             />
             <View style={styles.modalActions}>
               <TouchableOpacity style={[styles.modalBtn, { backgroundColor: 'rgba(216, 67, 21, 0.88)' }]} onPress={handleAddCategory} disabled={addingCat}>
-                {addingCat ? <ActivityIndicator color="#FFF" /> : <Text style={[styles.modalBtnText, { color: THEME.white }]}>إنشاء</Text>}
+                {addingCat ? <ActivityIndicator color="#FFF" /> : <Text style={[styles.modalBtnText, { color: THEME.white }]}>Create</Text>}
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modalBtn, { backgroundColor: THEME.muted }]} onPress={() => setCatModal(false)}>
-                <Text style={styles.modalBtnText}>إلغاء</Text>
+                <Text style={styles.modalBtnText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -452,36 +450,36 @@ export default function EditTodoScreen() {
 function createStyles(THEME: any) {
   return StyleSheet.create({
   container: { flex: 1, backgroundColor: THEME.background },
-  hdrRight: { flexDirection: 'row', alignItems: 'center', marginRight: 12, gap: 10 },
+  hdrLeft: { flexDirection: 'row', alignItems: 'center', marginLeft: 12, gap: 10 },
   hdrTitle: { color: THEME.white, fontSize: 17, fontFamily: Typography.fonts.bold },
   scroll: { padding: 20 },
 
   secTitle: {
     color: THEME.brand, fontSize: 13, fontFamily: Typography.fonts.bold,
-    marginBottom: 12, marginTop: 8, textAlign: 'right', letterSpacing: 0.5,
+    marginBottom: 12, marginTop: 8, textAlign: 'left', letterSpacing: 0.5,
   },
-  subLabel: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.medium, marginBottom: 10, textAlign: 'right' },
+  subLabel: { color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.medium, marginBottom: 10, textAlign: 'left' },
   mutedLabel: { color: THEME.disabledText, fontStyle: 'italic' },
   mutedText: { color: THEME.disabledText },
-  emptyMsg: { color: THEME.secondaryText, fontFamily: Typography.fonts.regular, textAlign: 'right', fontStyle: 'italic', marginBottom: 8 },
+  emptyMsg: { color: THEME.secondaryText, fontFamily: Typography.fonts.regular, textAlign: 'left', fontStyle: 'italic', marginBottom: 8 },
 
   input: {
     backgroundColor: THEME.inputBg, borderRadius: 14, padding: 14,
     color: THEME.text, fontFamily: Typography.fonts.regular, fontSize: 15,
     marginBottom: 8, borderWidth: 1, borderColor: THEME.divider,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   titleInput: { fontSize: 18, fontFamily: Typography.fonts.medium, minHeight: 54 },
   descInput: { minHeight: 90, textAlignVertical: 'top' },
   inputError: { borderColor: '#FF5252' },
   inputDisabled: { backgroundColor: THEME.disabled, color: THEME.disabledText },
-  fieldError: { color: '#FF5252', fontSize: 12, fontFamily: Typography.fonts.regular, textAlign: 'right', marginBottom: 6 },
+  fieldError: { color: '#FF5252', fontSize: 12, fontFamily: Typography.fonts.regular, textAlign: 'left', marginBottom: 6 },
   errorBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(255,82,82,0.1)', borderRadius: 12,
     padding: 12, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,82,82,0.3)',
   },
-  errorBannerText: { color: '#FF5252', fontFamily: Typography.fonts.regular, flex: 1, textAlign: 'right' },
+  errorBannerText: { color: '#FF5252', fontFamily: Typography.fonts.regular, flex: 1, textAlign: 'left' },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   gridItem: {
@@ -517,7 +515,7 @@ function createStyles(THEME: any) {
   addChipText: { color: THEME.brand, fontSize: 13, fontFamily: Typography.fonts.medium },
 
   intervalRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12 },
-  intervalPrefix: { color: THEME.secondaryText, fontFamily: Typography.fonts.medium, fontSize: 14, flex: 1, textAlign: 'right' },
+  intervalPrefix: { color: THEME.secondaryText, fontFamily: Typography.fonts.medium, fontSize: 14, flex: 1, textAlign: 'left' },
   intervalSuffix: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 16 },
   intervalInput: { width: 70, height: 48, padding: 8, marginBottom: 0, textAlign: 'center' },
 
@@ -537,8 +535,8 @@ function createStyles(THEME: any) {
     width: '85%', backgroundColor: THEME.secondaryBackground,
     borderRadius: 22, padding: 24, borderWidth: 1, borderColor: THEME.divider,
   },
-  modalX: { alignSelf: 'flex-start', marginBottom: 8 },
-  modalTitle: { color: THEME.text, fontSize: 18, fontFamily: Typography.fonts.bold, marginBottom: 16, textAlign: 'right' },
+  modalX: { alignSelf: 'flex-end', marginBottom: 8 },
+  modalTitle: { color: THEME.text, fontSize: 18, fontFamily: Typography.fonts.bold, marginBottom: 16, textAlign: 'left' },
   modalActions: { flexDirection: 'row', gap: 12 },
   modalBtn: { flex: 1, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   modalBtnText: { color: THEME.text, fontFamily: Typography.fonts.bold, fontSize: 15 },
@@ -563,13 +561,13 @@ function createStyles(THEME: any) {
     color: THEME.text,
     fontSize: 15,
     fontFamily: Typography.fonts.regular,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   dropdownPlaceholder: {
     color: THEME.secondaryText,
   },
   dropdownClear: {
-    paddingLeft: 8,
+    paddingRight: 8,
   },
   dropdownAdd: {
     flexDirection: 'row',
@@ -597,7 +595,7 @@ function createStyles(THEME: any) {
     maxHeight: 480,
   },
   dropdownModalHdr: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
@@ -624,14 +622,14 @@ function createStyles(THEME: any) {
     color: THEME.text,
     fontSize: 14,
     fontFamily: Typography.fonts.regular,
-    textAlign: 'right',
+    textAlign: 'left',
     outlineStyle: 'none' as any,
   },
   dropdownList: {
     maxHeight: 300,
   },
   dropdownOption: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 14,
@@ -640,7 +638,7 @@ function createStyles(THEME: any) {
     borderBottomColor: THEME.divider,
   },
   dropdownOptionLeft: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
@@ -648,7 +646,7 @@ function createStyles(THEME: any) {
     color: THEME.text,
     fontSize: 15,
     fontFamily: Typography.fonts.regular,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   dropdownEmpty: {
     color: THEME.secondaryText,

@@ -69,11 +69,11 @@ export default function CreateWorkplanScreen() {
   const handleCreate = async () => {
     setError('');
     if (!name.trim()) {
-      setError('يرجى إدخال اسم خطة العمل');
+      setError('Please enter a work plan name');
       return;
     }
     if (selectedTodos.length === 0) {
-      setError('يجب اختيار مهمة واحدة على الأقل');
+      setError('You must select at least one task');
       return;
     }
     setIsSaving(true);
@@ -88,10 +88,10 @@ export default function CreateWorkplanScreen() {
         router.replace('/(tabs)/plans');
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.message || 'فشل إنشاء خطة العمل');
+        setError(data.message || 'Failed to create work plan');
       }
     } catch {
-      setError('مشكلة في الاتصال بالخادم');
+      setError('Server connection problem');
     } finally {
       setIsSaving(false);
     }
@@ -103,27 +103,27 @@ export default function CreateWorkplanScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerTitle: '', headerStyle: { backgroundColor: '#E65A2A' }, headerShadowVisible: false, headerRight: () => (
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
+      <Stack.Screen options={{ headerTitle: '', headerStyle: { backgroundColor: '#E65A2A' }, headerShadowVisible: false, headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 20 }}>
-              <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Typography.fonts.bold }}>إنشاء خطة عمل</Text>
-              <MaterialCommunityIcons name="arrow-right" size={24} color="#FFFFFF" />
+              <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+              <Text style={{ color: '#FFFFFF', fontSize: 18, fontFamily: Typography.fonts.bold }}>Create Work Plan</Text>
             </TouchableOpacity>
-          ), headerLeft: () => null }} />
+          ), headerRight: () => null }} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={styles.label}>الاسم</Text>
-          <TextInput style={styles.input} value={name} onChangeText={v => { setError(''); setName(v); }} placeholder="مثال: مشروع البرمجة" placeholderTextColor={THEME.secondaryText} />
+          <Text style={styles.label}>Name</Text>
+          <TextInput style={styles.input} value={name} onChangeText={v => { setError(''); setName(v); }} placeholder="e.g., Programming Project" placeholderTextColor={THEME.secondaryText} />
 
-          <Text style={styles.label}>الوصف</Text>
-          <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={v => { setError(''); setDescription(v); }} placeholder="وصف مختصر للخطة" placeholderTextColor={THEME.secondaryText} multiline numberOfLines={3} />
+          <Text style={styles.label}>Description</Text>
+          <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={v => { setError(''); setDescription(v); }} placeholder="Brief description of the plan" placeholderTextColor={THEME.secondaryText} multiline numberOfLines={3} />
 
-          <Text style={styles.sectionTitle}>المهام المحددة ({selectedTodos.length})</Text>
+          <Text style={styles.sectionTitle}>Selected Tasks ({selectedTodos.length})</Text>
           {selectedTodos.length === 0 ? (
             <View style={styles.emptyState}>
               <MaterialCommunityIcons name="file-document-outline" size={40} color={THEME.disabledText} />
-              <Text style={styles.emptyTitle}>لا توجد مهام مضافة</Text>
-              <Text style={styles.emptyHint}>اضغط على "إضافة مهام" لاختيار المهام التي تريد إضافتها إلى خطة العمل</Text>
+              <Text style={styles.emptyTitle}>No tasks added</Text>
+              <Text style={styles.emptyHint}>Press "Add Tasks" to select tasks for your work plan</Text>
             </View>
           ) : (
             selectedTodos.map((item: any, idx: number) => (
@@ -148,10 +148,10 @@ export default function CreateWorkplanScreen() {
               <MaterialCommunityIcons name="grid" size={18} color={THEME.brand} />
             </View>
             <View style={styles.addBtnContent}>
-              <Text style={styles.addBtnLabel}>إضافة مهام</Text>
-              <Text style={styles.addBtnHint}>اختر من قائمة المهام المتاحة</Text>
+              <Text style={styles.addBtnLabel}>Add Tasks</Text>
+              <Text style={styles.addBtnHint}>Choose from available tasks</Text>
             </View>
-            <MaterialCommunityIcons name="chevron-left" size={18} color={THEME.secondaryText} />
+            <MaterialCommunityIcons name="chevron-right" size={18} color={THEME.secondaryText} />
           </TouchableOpacity>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -164,7 +164,7 @@ export default function CreateWorkplanScreen() {
             ) : (
               <>
                 <MaterialCommunityIcons name="check-circle" size={22} color={THEME.white} />
-                <Text style={styles.saveText}>إنشاء خطة العمل</Text>
+                <Text style={styles.saveText}>Create Work Plan</Text>
               </>
             )}
           </TouchableOpacity>
@@ -178,7 +178,7 @@ export default function CreateWorkplanScreen() {
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <MaterialCommunityIcons name="close" size={24} color={THEME.text} />
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>اختيار المهام</Text>
+              <Text style={styles.modalTitle}>Select Tasks</Text>
             </View>
 
             <View style={styles.searchContainer}>
@@ -187,7 +187,7 @@ export default function CreateWorkplanScreen() {
                 style={[styles.searchInput, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
                 value={search}
                 onChangeText={setSearch}
-                placeholder="ابحث عن مهمة..."
+                placeholder="Search for a task..."
                 placeholderTextColor={THEME.secondaryText}
                 autoFocus
               />
@@ -200,7 +200,7 @@ export default function CreateWorkplanScreen() {
 
             <ScrollView style={styles.modalList} showsVerticalScrollIndicator={false}>
               {allSearchResults.length === 0 ? (
-                <Text style={styles.modalEmpty}>لا توجد مهام متاحة</Text>
+                <Text style={styles.modalEmpty}>No available tasks</Text>
               ) : (
                 allSearchResults.map(todo => (
                   <TouchableOpacity
@@ -224,7 +224,7 @@ export default function CreateWorkplanScreen() {
 
             <View style={styles.modalNote}>
               <MaterialCommunityIcons name="information" size={20} color={THEME.brand} />
-              <Text style={styles.modalNoteText}>يمكنك ترتيب المهام حسب الأولوية بعد إضافتها باستخدام الأسهم</Text>
+              <Text style={styles.modalNoteText}>You can reorder tasks by priority after adding them using the arrows</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -237,17 +237,17 @@ function createStyles(THEME: any) {
   return StyleSheet.create({
   container: { flex: 1, backgroundColor: THEME.background },
   scroll: { padding: 20, paddingBottom: 40 },
-  label: { color: THEME.secondaryText, fontSize: 14, fontFamily: Typography.fonts.medium, marginBottom: 8, textAlign: 'right', marginTop: 16 },
-  input: { backgroundColor: THEME.inputBg, borderRadius: 14, padding: 16, color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.regular, textAlign: 'right', borderWidth: 1, borderColor: THEME.divider },
+  label: { color: THEME.secondaryText, fontSize: 14, fontFamily: Typography.fonts.medium, marginBottom: 8, textAlign: 'left', marginTop: 16 },
+  input: { backgroundColor: THEME.inputBg, borderRadius: 14, padding: 16, color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.regular, textAlign: 'left', borderWidth: 1, borderColor: THEME.divider },
   textArea: { minHeight: 80, textAlignVertical: 'top' },
-  sectionTitle: { color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.bold, marginTop: 24, marginBottom: 12, textAlign: 'right' },
+  sectionTitle: { color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.bold, marginTop: 24, marginBottom: 12, textAlign: 'left' },
   emptyState: { alignItems: 'center', paddingVertical: 32, gap: 12 },
   emptyTitle: { color: THEME.disabledText, fontSize: 16, fontFamily: Typography.fonts.medium, textAlign: 'center' },
   emptyHint: { color: THEME.disabledText, fontSize: 13, fontFamily: Typography.fonts.regular, textAlign: 'center', paddingHorizontal: 20, lineHeight: 20 },
   todoRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: THEME.card, padding: 14, borderRadius: 12, marginBottom: 8, gap: 10, borderWidth: 1, borderColor: THEME.divider },
   removeBtn: { padding: 2 },
   errorText: { color: THEME.danger, fontSize: 14, fontFamily: Typography.fonts.medium, textAlign: 'center', marginBottom: 12 },
-  todoTitle: { flex: 1, color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.regular, textAlign: 'right' },
+  todoTitle: { flex: 1, color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.regular, textAlign: 'left' },
   orderBadge: { backgroundColor: THEME.brand, color: THEME.white, fontSize: 12, fontFamily: Typography.fonts.bold, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, overflow: 'hidden', minWidth: 22, textAlign: 'center' },
   saveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(216, 67, 21, 0.88)', padding: 18, borderRadius: 16, marginTop: 32, gap: 8 },
   saveText: { color: THEME.white, fontSize: 17, fontFamily: Typography.fonts.bold },
@@ -256,20 +256,20 @@ function createStyles(THEME: any) {
   addBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: THEME.card, padding: 14, borderRadius: 16, marginTop: 16, borderWidth: 1, borderColor: THEME.divider, gap: 14 },
   addBtnIconWrap: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(216,67,21,0.1)', justifyContent: 'center', alignItems: 'center' },
   addBtnContent: { flex: 1 },
-  addBtnLabel: { color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.medium, textAlign: 'right' },
-  addBtnHint: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, textAlign: 'right', marginTop: 2 },
+  addBtnLabel: { color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.medium, textAlign: 'left' },
+  addBtnHint: { color: THEME.secondaryText, fontSize: 12, fontFamily: Typography.fonts.regular, textAlign: 'left', marginTop: 2 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalContainer: { backgroundColor: THEME.background, borderRadius: 24, width: '100%', maxWidth: 480, maxHeight: '80%', paddingBottom: 24 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 12, padding: 20, paddingBottom: 12 },
-  modalTitle: { flex: 1, color: THEME.text, fontSize: 18, fontFamily: Typography.fonts.bold, textAlign: 'right' },
+  modalTitle: { flex: 1, color: THEME.text, fontSize: 18, fontFamily: Typography.fonts.bold, textAlign: 'left' },
   modalNote: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: 'rgba(216,67,21,0.08)', marginHorizontal: 20, marginBottom: 4, padding: 14, borderRadius: 12, gap: 10 },
-  modalNoteText: { flex: 1, color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.regular, textAlign: 'right', lineHeight: 20 },
+  modalNoteText: { flex: 1, color: THEME.secondaryText, fontSize: 13, fontFamily: Typography.fonts.regular, textAlign: 'left', lineHeight: 20 },
   searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: THEME.inputBg, marginHorizontal: 20, marginBottom: 12, borderRadius: 12, paddingHorizontal: 14, height: 46, borderWidth: 1, borderColor: THEME.divider },
-  searchInput: { flex: 1, color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.regular, textAlign: 'right' },
+  searchInput: { flex: 1, color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.regular, textAlign: 'left' },
   modalList: { paddingHorizontal: 20 },
   modalEmpty: { color: THEME.disabledText, fontSize: 14, fontFamily: Typography.fonts.regular, textAlign: 'center', marginVertical: 30 },
   modalRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: THEME.card, padding: 14, borderRadius: 12, marginBottom: 8, gap: 12, borderWidth: 1, borderColor: THEME.divider },
   modalRowContent: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  modalRowTitle: { flex: 1, color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.regular, textAlign: 'right' },
+  modalRowTitle: { flex: 1, color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.regular, textAlign: 'left' },
   });
 }

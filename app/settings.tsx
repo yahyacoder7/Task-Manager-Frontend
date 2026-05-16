@@ -25,15 +25,15 @@ export default function SettingsScreen() {
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert('خطأ', 'يرجى ملء جميع الحقول');
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
     if (newPassword !== confirmPassword) {
-      Alert.alert('خطأ', 'كلمة المرور الجديدة وتأكيدها غير متطابقين');
+      Alert.alert('Error', 'New password and confirmation do not match');
       return;
     }
     if (newPassword.length < 6) {
-      Alert.alert('خطأ', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      Alert.alert('Error', 'Password must be at least 6 characters');
       return;
     }
 
@@ -53,49 +53,49 @@ export default function SettingsScreen() {
       });
 
       if (response.ok) {
-        Alert.alert('تم', 'تم تغيير كلمة المرور بنجاح');
+        Alert.alert('Success', 'Password changed successfully');
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
         setShowPasswordForm(false);
       } else {
         const err = await response.json();
-        Alert.alert('خطأ', err.message || 'فشل تغيير كلمة المرور');
+        Alert.alert('Error', err.message || 'Failed to change password');
       }
     } catch (err) {
-      Alert.alert('خطأ', 'حدث خطأ في الاتصال');
+      Alert.alert('Error', 'Connection error');
     } finally {
       setIsChangingPassword(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
       <Stack.Screen options={{
         headerShown: true,
         headerTitle: "",
         headerStyle: { backgroundColor: '#E65A2A' },
         headerShadowVisible: false,
         headerTintColor: '#FFFFFF',
-        headerRight: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, gap: 12 }}>
+        headerLeft: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10, gap: 12 }}>
             <TouchableOpacity
               onPress={() => router.back()}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
             >
+              <MaterialCommunityIcons name="arrow-left" size={22} color="#FFFFFF" />
               <Text style={{
                 color: '#FFFFFF',
                 fontSize: 16,
                 fontWeight: 'bold',
                 fontFamily: Typography.fonts.bold
               }}>
-                الإعدادات
+                Settings
               </Text>
-              <MaterialCommunityIcons name="arrow-left" size={22} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         ),
-        headerLeft: () => null,
+        headerRight: () => null,
       }} />
 
       <View style={styles.centerContent}>
@@ -103,9 +103,9 @@ export default function SettingsScreen() {
           <View style={styles.comingSoonIconWrap}>
             <MaterialCommunityIcons name="cog-outline" size={48} color={THEME.brand} />
           </View>
-          <Text style={styles.comingSoonTitle}>إعدادات التطبيق</Text>
+          <Text style={styles.comingSoonTitle}>App Settings</Text>
           <Text style={styles.comingSoonDescription}>
-            قريباً ستتمكن من تخصيص إعداداتك والتحكم الكامل في تجربتك داخل التطبيق.
+            Soon you will be able to customize your settings and have full control over your experience in the app.
           </Text>
         </View>
       </View>

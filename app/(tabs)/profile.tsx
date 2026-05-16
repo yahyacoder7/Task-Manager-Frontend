@@ -105,17 +105,9 @@ export default function ProfileScreen() {
       await deleteItem('userToken');
       await deleteItem('userData');
       await deleteItem('userEmail');
-      
-      // Force navigation to the root (Login screen)
-      if (Platform.OS === 'web') {
-        window.location.href = '/';
-      } else {
-        // Dismiss all tab routes and go back to login
-        router.replace('/');
-      }
+      router.replace('/');
     } catch (err) {
       console.error("Error during logout:", err);
-      // Fallback redirect
       router.replace('/');
     }
   };
@@ -146,13 +138,13 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         <View style={styles.themeToggleRow}>
           <TouchableOpacity onPress={toggleTheme} style={styles.themeToggleBtn}>
             <MaterialCommunityIcons name={isDark ? "weather-night" : "weather-sunny"} size={20} color={THEME.text} />
-            <Text style={[styles.themeToggleText, { color: THEME.secondaryText }]}>{isDark ? 'داكن' : 'فاتح'}</Text>
+            <Text style={[styles.themeToggleText, { color: THEME.secondaryText }]}>{isDark ? 'Dark' : 'Light'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -165,62 +157,62 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.activeBadge} />
           </View>
-          <Text style={styles.userName}>{user?.name || 'مستخدم Task Flow'}</Text>
+          <Text style={styles.userName}>{user?.name || 'Task Flow User'}</Text>
           <Text style={styles.userEmail}>{user?.email || 'email@example.com'}</Text>
         </View>
 
         <GlassCard style={styles.infoCard}>
             <View style={styles.infoRow}>
               <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>تاريخ الانضمام</Text>
+                <Text style={styles.infoLabel}>Joined</Text>
                 <Text style={styles.infoValue}>{formatDateArabic(user?.createdAt)}</Text>
               </View>
               <View style={styles.infoDivider} />
               <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>الحالة</Text>
+                <Text style={styles.infoLabel}>Status</Text>
                 <View style={styles.statusBadge}>
-                  <Text style={styles.statusText}>نشط</Text>
+                  <Text style={styles.statusText}>Active</Text>
                 </View>
               </View>
             </View>
           </GlassCard>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>بيانات الحساب</Text>
+            <Text style={styles.sectionTitle}>Account Data</Text>
 
             <TouchableOpacity style={styles.actionButton} onPress={handleUpdateName}>
               <View style={styles.actionIconContainer}>
                 <MaterialCommunityIcons name="account-outline" size={22} color={THEME.brand} />
               </View>
-              <Text style={styles.actionText}>تعديل البيانات الشخصية</Text>
-              <MaterialCommunityIcons name="chevron-left" size={20} color={THEME.secondaryText} />
+              <Text style={styles.actionText}>Edit Profile</Text>
+              <MaterialCommunityIcons name="chevron-right" size={20} color={THEME.secondaryText} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>الإعدادات</Text>
+            <Text style={styles.sectionTitle}>Settings</Text>
 
             <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/settings')}>
               <View style={styles.actionIconContainer}>
                 <MaterialCommunityIcons name="cog-outline" size={22} color={THEME.brand} />
               </View>
-              <Text style={styles.actionText}>الإعدادات</Text>
-              <MaterialCommunityIcons name="chevron-left" size={20} color={THEME.secondaryText} />
+              <Text style={styles.actionText}>Settings</Text>
+              <MaterialCommunityIcons name="chevron-right" size={20} color={THEME.secondaryText} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>نظرة سريعة</Text>
+            <Text style={styles.sectionTitle}>Quick Overview</Text>
             <View style={styles.statsRow}>
               <GlassCard style={styles.statBox}>
                 <MaterialCommunityIcons name="check-circle" size={28} color={THEME.success} />
                 <Text style={styles.statValue}>{stats.completed}</Text>
-                <Text style={styles.statLabel}>مهمة مكتملة</Text>
+                <Text style={styles.statLabel}>Tasks Completed</Text>
               </GlassCard>
               <GlassCard style={styles.statBox}>
                 <MaterialCommunityIcons name="clock-outline" size={28} color={THEME.warning} />
                 <Text style={styles.statValue}>{stats.incomplete}</Text>
-                <Text style={styles.statLabel}>مهام قيد العمل</Text>
+                <Text style={styles.statLabel}>In Progress</Text>
               </GlassCard>
             </View>
           </View>
@@ -229,17 +221,16 @@ export default function ProfileScreen() {
           <View style={styles.logoutDivider} />
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <MaterialCommunityIcons name="logout" size={16} color={THEME.secondaryText} />
-            <Text style={styles.logoutText}>تسجيل الخروج</Text>
+            <Text style={styles.logoutText}>Sign Out</Text>
           </TouchableOpacity>
           <Text style={styles.versionText}>Task Flow v1.0.0</Text>
         </View>
       </ScrollView>
 
-      {/* Toast Message */}
       {showToast && (
         <Animated.View style={[styles.toastContainer, { opacity: toastOpacity }]}>
           <MaterialCommunityIcons name="check-circle" size={20} color={THEME.white} />
-          <Text style={styles.toastText}>تم تحديث الاسم بنجاح</Text>
+          <Text style={styles.toastText}>Name updated successfully</Text>
         </Animated.View>
       )}
     </SafeAreaView>
@@ -370,7 +361,7 @@ function createStyles(THEME: any) {
     fontWeight: 'bold',
     color: THEME.text,
     marginBottom: 16,
-    textAlign: 'right',
+    textAlign: 'left',
     fontFamily: Typography.fonts.bold,
   },
   actionButton: {
@@ -390,20 +381,20 @@ function createStyles(THEME: any) {
     backgroundColor: 'rgba(216, 67, 21, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 16,
+    marginRight: 16,
   },
   actionText: {
     flex: 1,
     fontSize: 16,
     color: THEME.text,
-    textAlign: 'right',
+    textAlign: 'left',
     fontFamily: Typography.fonts.medium,
   },
   actionHint: {
     fontSize: 12,
     color: THEME.secondaryText,
     fontFamily: Typography.fonts.regular,
-    marginLeft: 8,
+    marginRight: 8,
   },
   statsRow: {
     flexDirection: 'row',

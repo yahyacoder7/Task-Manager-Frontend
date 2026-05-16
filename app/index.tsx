@@ -27,7 +27,6 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [loginResult, setLoginResult] = useState<any>(null);
@@ -46,7 +45,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+      setError("Please enter your email and password");
       return;
     }
 
@@ -69,18 +68,17 @@ export default function LoginScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        // Save using our cross-platform utility
         await saveItem('userToken', data.access_token);
         await saveItem('userData', JSON.stringify(data.user));
         
         console.log("Login Success:", data);
         router.replace("/(tabs)");
       } else {
-        setError(data.message || "فشل تسجيل الدخول. يرجى التحقق من بياناتك.");
+        setError(data.message || "Login failed. Please check your credentials.");
       }
     } catch (err) {
       console.error("Login Error:", err);
-      setError("حدث خطأ أثناء الاتصال بالخادم. تأكد من تشغيل الـ Backend.");
+      setError("Server connection error. Make sure the backend is running.");
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +86,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }, { direction: 'rtl' } as any]}
+      style={[styles.container, { backgroundColor: theme.background }, { direction: 'ltr' } as any]}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
@@ -98,12 +96,13 @@ export default function LoginScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           {loginResult ? (
             <View style={styles.successContainer}>
               <MaterialCommunityIcons name="check-circle" size={80} color="#4CAF50" />
               <Text style={[styles.successTitle, { color: theme.text }]}>
-                تم تسجيل الدخول بنجاح!
+                Login Successful!
               </Text>
               <View
                 style={[
@@ -112,7 +111,7 @@ export default function LoginScreen() {
                 ]}
               >
                 <Text style={[styles.resultText, { color: theme.text }]}>
-                  بيانات المستخدم:
+                  User Data:
                 </Text>
                 <Text style={[styles.jsonText, { color: theme.secondaryText }]}>
                   {JSON.stringify(loginResult.user, null, 2)}
@@ -143,26 +142,24 @@ export default function LoginScreen() {
                 ]}
                 onPress={() => setLoginResult(null)}
               >
-                <Text style={styles.loginButtonText}>العودة لتسجيل الدخول</Text>
+                <Text style={styles.loginButtonText}>Back to Login</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <>
               <View style={styles.header}>
                 <View style={styles.logoContainer}>
-                  {/* 🚩🚩🚩 CHANGE LOGO HERE 🚩🚩🚩 */}
                   <Image 
                     source={require("../assets/images/logo.png")} 
                     style={styles.logoImage}
                     resizeMode="contain"
                   />
-                  {/* 🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩 */}
                   <Text style={[styles.appName, { color: theme.text }]}>
                     Task Flow
                   </Text>
                 </View>
                 <Text style={[styles.welcomeText, { color: theme.text }]}>
-                  مرحباً بك مجدداً في نظام إدارة المهام Task Flow
+                  Welcome back to Task Flow
                 </Text>
               </View>
 
@@ -174,117 +171,46 @@ export default function LoginScreen() {
                 )}
 
                 <View style={styles.inputGroup}>
-                  <Text
-                    style={[
-                      styles.inputLabel,
-                      {
-                        color:
-                          focusedInput === "email"
-                            ? theme.brand
-                            : theme.secondaryText,
-                      },
-                    ]}
-                  >
-                    البريد الإلكتروني
+                  <Text style={[styles.inputLabel, { color: theme.brand }]}>
+                    Email
                   </Text>
-<View
-                    style={[
-                      styles.inputWrapper,
-                      {
-                        backgroundColor:
-                          focusedInput === "email"
-                            ? "rgba(255, 255, 255, 0.15)"
-                            : theme.secondaryBackground,
-                        borderColor:
-                          focusedInput === "email"
-                            ? theme.brand
-                            : "transparent",
-                      },
-                    ]}
-                  >
+                  <View style={[styles.inputWrapper, { backgroundColor: theme.secondaryBackground }]}>
+                    <MaterialCommunityIcons name="email-outline" size={20} color={theme.secondaryText} style={styles.inputIcon} />
                     <TextInput
-                      style={[styles.input, { color: theme.text }] as any}
+                      style={[styles.input, { color: theme.text }]}
                       placeholder="example@gmail.com"
                       placeholderTextColor={theme.secondaryText}
                       value={email}
                       onChangeText={setEmail}
-                      onFocus={() => setFocusedInput("email")}
-                      onBlur={() => setFocusedInput(null)}
                       keyboardType="email-address"
                       autoCapitalize="none"
-                    />
-                    <MaterialCommunityIcons name="email-outline"
-                      size={20}
-                      color={
-                        focusedInput === "email" ? theme.brand : theme.secondaryText
-                      }
-                      style={styles.inputIcon}
                     />
                   </View>
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text
-                    style={[
-                      styles.inputLabel,
-                      {
-                        color:
-                          focusedInput === "password"
-                            ? theme.brand
-                            : theme.secondaryText,
-                      },
-                    ]}
-                  >
-                    كلمة المرور
+                  <Text style={[styles.inputLabel, { color: theme.brand }]}>
+                    Password
                   </Text>
-                  <View
-                    style={[
-                      styles.inputWrapper,
-                      {
-                        backgroundColor:
-                          focusedInput === "password"
-                            ? "rgba(255, 255, 255, 0.15)"
-                            : theme.secondaryBackground,
-                        borderColor:
-                          focusedInput === "password"
-                            ? theme.brand
-                            : "transparent",
-                      },
-                    ]}
-                  >
-                    <TouchableOpacity
-                      onPress={() => setShowPassword(!showPassword)}
-                      style={styles.eyeIcon}
-                    >
-                      {showPassword ? <MaterialCommunityIcons name="eye-off" size={20} color={theme.secondaryText} /> : <MaterialCommunityIcons name="eye" size={20} color={theme.secondaryText} />}
-                    </TouchableOpacity>
+                  <View style={[styles.inputWrapper, { backgroundColor: theme.secondaryBackground }]}>
+                    <MaterialCommunityIcons name="lock-outline" size={20} color={theme.secondaryText} style={styles.inputIcon} />
                     <TextInput
-                      style={[styles.input, { color: theme.text }] as any}
-                      placeholder="••••••••••••"
+                      style={[styles.input, { color: theme.text }]}
+                      placeholder="Enter your password"
                       placeholderTextColor={theme.secondaryText}
                       value={password}
                       onChangeText={setPassword}
-                      onFocus={() => setFocusedInput("password")}
-                      onBlur={() => setFocusedInput(null)}
                       secureTextEntry={!showPassword}
                     />
-                    <MaterialCommunityIcons name="lock-outline"
-                      size={20}
-                      color={
-                        focusedInput === "password"
-                          ? theme.brand
-                          : theme.secondaryText
-                      }
-                      style={styles.inputIcon}
-                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                      <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={20} color={theme.secondaryText} />
+                    </TouchableOpacity>
                   </View>
                 </View>
 
                 <TouchableOpacity style={styles.forgotPassword}>
-                  <Text
-                    style={[styles.forgotPasswordText, { color: theme.brand }]}
-                  >
-                    نسيت كلمة المرور؟
+                  <Text style={[styles.forgotPasswordText, { color: theme.brand }]}>
+                    Forgot Password?
                   </Text>
                 </TouchableOpacity>
 
@@ -299,22 +225,18 @@ export default function LoginScreen() {
                   ) : (
                     <>
                       <MaterialCommunityIcons name="login-variant" size={20} color="#FFFFFF" />
-                      <Text style={styles.loginButtonText}>تسجيل الدخول</Text>
+                      <Text style={styles.loginButtonText}>Sign In</Text>
                     </>
                   )}
                 </TouchableOpacity>
 
-
-
-
-
                 <View style={styles.signupContainer}>
                   <Text style={[styles.signupText, { color: theme.text }]}>
-                    ليس لديك حساب؟{" "}
+                    Don&apos;t have an account?{" "}
                   </Text>
                   <TouchableOpacity onPress={() => router.push("/register")}>
                     <Text style={[styles.signupLink, { color: theme.brand }]}>
-                      أنشئ حساباً جديداً
+                      Sign Up
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -367,7 +289,6 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "100%",
-    alignItems: 'flex-end',
   },
   errorContainer: {
     backgroundColor: "rgba(234, 67, 53, 0.1)",
@@ -390,19 +311,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "bold",
     marginBottom: 10,
-    textAlign: "right",
-    alignSelf: 'flex-end',
-    paddingRight: 4,
-    color: '#D84315', // لون برتقالي لتمييز العنوان
   },
   inputWrapper: {
     width: '100%',
     height: 60,
-    backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 15,
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     paddingHorizontal: 15,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
@@ -413,17 +328,12 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    textAlign: "right",
-    writingDirection: "rtl",
-    marginRight: 10,
-    // We handle the outline removal for web with a conditional prop or CSS-in-JS if needed,
-    // but for now, we remove it from the standard RN StyleSheet to fix TS error.
     ...Platform.select({
       web: {
         outlineStyle: "none",
       },
     }),
-  } as any,
+  },
   eyeIcon: {
     padding: 4,
   },
@@ -456,7 +366,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "700",
   },
-
   signupContainer: {
     flexDirection: "row",
     justifyContent: "center",

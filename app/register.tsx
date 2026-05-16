@@ -26,14 +26,13 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleRegister = async () => {
     if (!name || !email || !password) {
-      setError("يرجى ملء كافة الحقول");
+      setError("Please fill in all fields");
       return;
     }
 
@@ -54,7 +53,6 @@ export default function RegisterScreen() {
       });
 
       if (response.status === 201) {
-        // Registration success - move to OTP verification
         router.push({
           pathname: "/verify-otp",
           params: { email: email.trim() },
@@ -62,12 +60,12 @@ export default function RegisterScreen() {
       } else {
         const data = await response.json();
         setError(
-          data.message || "فشل إنشاء الحساب. قد يكون البريد مستخدماً بالفعل.",
+          data.message || "Account creation failed. Email may already be in use.",
         );
       }
     } catch (err) {
       console.error("Register Error:", err);
-      setError("حدث خطأ أثناء الاتصال بالخادم.");
+      setError("Server connection error.");
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +73,7 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }, { direction: 'rtl' } as any]}
+      style={[styles.container, { backgroundColor: theme.background }, { direction: 'ltr' } as any]}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
@@ -85,20 +83,19 @@ export default function RegisterScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              {/* 🚩🚩🚩 CHANGE LOGO HERE 🚩🚩🚩 */}
               <Image 
                 source={require("../assets/images/logo.png")} 
                 style={styles.logoImage}
                 resizeMode="contain"
               />
-              {/* 🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩 */}
               <Text style={[styles.appName, { color: theme.text }]}>Task Flow</Text>
             </View>
             <Text style={[styles.welcomeText, { color: theme.text }]}>
-              ابدأ رحلتك في إدارة المهام مع Task Flow
+              Start your task management journey with Task Flow
             </Text>
           </View>
 
@@ -109,160 +106,57 @@ export default function RegisterScreen() {
               </View>
             )}
 
-            {/* Name Input */}
             <View style={styles.inputGroup}>
-              <Text
-                style={[
-                  styles.inputLabel,
-                  {
-                    color:
-                      focusedInput === "name"
-                        ? theme.brand
-                        : theme.secondaryText,
-                  },
-                ]}
-              >
-                الاسم بالكامل
+              <Text style={[styles.inputLabel, { color: theme.brand }]}>
+                Full Name
               </Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  {
-                    backgroundColor:
-                      focusedInput === "name"
-                        ? "rgba(255, 255, 255, 0.15)"
-                        : theme.secondaryBackground,
-                    borderColor:
-                      focusedInput === "name" ? theme.brand : "transparent",
-                  },
-                ]}
-              >
+              <View style={[styles.inputWrapper, { backgroundColor: theme.secondaryBackground }]}>
+                <MaterialCommunityIcons name="account-outline" size={20} color={theme.secondaryText} style={styles.inputIcon} />
                 <TextInput
-                  style={[styles.input, { color: theme.text }] as any}
-                  placeholder="الاسم بالكامل"
+                  style={[styles.input, { color: theme.text }]}
+                  placeholder="Enter your full name"
                   placeholderTextColor={theme.secondaryText}
                   value={name}
                   onChangeText={setName}
-                  onFocus={() => setFocusedInput("name")}
-                  onBlur={() => setFocusedInput(null)}
-                />
-                <MaterialCommunityIcons
-                  name="account-outline"
-                  size={20}
-                  color={
-                    focusedInput === "name" ? theme.brand : theme.secondaryText
-                  }
-                  style={styles.inputIcon}
                 />
               </View>
             </View>
 
-            {/* Email Input */}
             <View style={styles.inputGroup}>
-              <Text
-                style={[
-                  styles.inputLabel,
-                  {
-                    color:
-                      focusedInput === "email"
-                        ? theme.brand
-                        : theme.secondaryText,
-                  },
-                ]}
-              >
-                البريد الإلكتروني
+              <Text style={[styles.inputLabel, { color: theme.brand }]}>
+                Email
               </Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  {
-                    backgroundColor:
-                      focusedInput === "email"
-                        ? "rgba(255, 255, 255, 0.15)"
-                        : theme.secondaryBackground,
-                    borderColor:
-                      focusedInput === "email" ? theme.brand : "transparent",
-                  },
-                ]}
-              >
+              <View style={[styles.inputWrapper, { backgroundColor: theme.secondaryBackground }]}>
+                <MaterialCommunityIcons name="email-outline" size={20} color={theme.secondaryText} style={styles.inputIcon} />
                 <TextInput
-                  style={[styles.input, { color: theme.text }] as any}
+                  style={[styles.input, { color: theme.text }]}
                   placeholder="example@gmail.com"
                   placeholderTextColor={theme.secondaryText}
                   value={email}
                   onChangeText={setEmail}
-                  onFocus={() => setFocusedInput("email")}
-                  onBlur={() => setFocusedInput(null)}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                />
-                <MaterialCommunityIcons
-                  name="email-outline"
-                  size={20}
-                  color={
-                    focusedInput === "email" ? theme.brand : theme.secondaryText
-                  }
-                  style={styles.inputIcon}
                 />
               </View>
             </View>
 
-            {/* Password Input */}
             <View style={styles.inputGroup}>
-              <Text
-                style={[
-                  styles.inputLabel,
-                  {
-                    color:
-                      focusedInput === "password"
-                        ? theme.brand
-                        : theme.secondaryText,
-                  },
-                ]}
-              >
-                كلمة المرور
+              <Text style={[styles.inputLabel, { color: theme.brand }]}>
+                Password
               </Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  {
-                    backgroundColor:
-                      focusedInput === "password"
-                        ? "rgba(255, 255, 255, 0.15)"
-                        : theme.secondaryBackground,
-                    borderColor:
-                      focusedInput === "password"
-                        ? theme.brand
-                        : "transparent",
-                  },
-                ]}
-              >
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeIcon}
-                >
-                  <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={20} color={theme.secondaryText} />
-                </TouchableOpacity>
+              <View style={[styles.inputWrapper, { backgroundColor: theme.secondaryBackground }]}>
+                <MaterialCommunityIcons name="lock-outline" size={20} color={theme.secondaryText} style={styles.inputIcon} />
                 <TextInput
-                  style={[styles.input, { color: theme.text }] as any}
-                  placeholder="••••••••"
+                  style={[styles.input, { color: theme.text }]}
+                  placeholder="Create a password"
                   placeholderTextColor={theme.secondaryText}
                   value={password}
                   onChangeText={setPassword}
-                  onFocus={() => setFocusedInput("password")}
-                  onBlur={() => setFocusedInput(null)}
                   secureTextEntry={!showPassword}
                 />
-                <MaterialCommunityIcons
-                  name="lock-outline"
-                  size={20}
-                  color={
-                    focusedInput === "password"
-                      ? theme.brand
-                      : theme.secondaryText
-                  }
-                  style={styles.inputIcon}
-                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                  <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={20} color={theme.secondaryText} />
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -280,22 +174,18 @@ export default function RegisterScreen() {
               ) : (
                 <>
                   <MaterialCommunityIcons name="account-plus-outline" size={20} color="#FFFFFF" />
-                  <Text style={styles.loginButtonText}>إنشاء حساب جديد</Text>
+                  <Text style={styles.loginButtonText}>Create Account</Text>
                 </>
               )}
             </TouchableOpacity>
 
-
-
-
-
             <View style={styles.signupContainer}>
               <Text style={[styles.signupText, { color: theme.text }]}>
-                لديك حساب بالفعل؟{" "}
+                Already have an account?{" "}
               </Text>
               <TouchableOpacity onPress={() => router.back()}>
                 <Text style={[styles.signupLink, { color: theme.brand }]}>
-                  تسجيل الدخول
+                  Sign In
                 </Text>
               </TouchableOpacity>
             </View>
@@ -346,7 +236,6 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "100%",
-    alignItems: 'flex-end',
   },
   errorContainer: {
     backgroundColor: "rgba(234, 67, 53, 0.1)",
@@ -369,19 +258,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "bold",
     marginBottom: 10,
-    textAlign: "right",
-    alignSelf: 'flex-end',
-    paddingRight: 4,
-    color: '#D84315',
   },
   inputWrapper: {
     width: '100%',
     height: 60,
-    backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 15,
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     paddingHorizontal: 15,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
@@ -392,12 +275,12 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    textAlign: "right",
-    writingDirection: "rtl",
-    marginRight: 10,
-    // @ts-ignore
-    outlineStyle: "none",
-  } as any,
+    ...Platform.select({
+      web: {
+        outlineStyle: "none",
+      },
+    }),
+  },
   eyeIcon: {
     padding: 4,
   },
@@ -421,7 +304,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "700",
   },
-
   signupContainer: {
     flexDirection: "row",
     justifyContent: "center",

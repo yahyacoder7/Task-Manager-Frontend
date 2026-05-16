@@ -76,7 +76,7 @@ export default function EditWorkplanScreen() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('تنبيه', 'يرجى إدخال اسم خطة العمل');
+      Alert.alert('Warning', 'Please enter a work plan name');
       return;
     }
     setIsSaving(true);
@@ -91,10 +91,10 @@ export default function EditWorkplanScreen() {
         router.back();
       } else {
         const data = await res.json().catch(() => ({}));
-        Alert.alert('خطأ', data.message || 'فشل تحديث خطة العمل');
+        Alert.alert('Error', data.message || 'Failed to update work plan');
       }
     } catch {
-      Alert.alert('خطأ', 'مشكلة في الاتصال بالخادم');
+      Alert.alert('Error', 'Server connection problem');
     } finally {
       setIsSaving(false);
     }
@@ -108,26 +108,26 @@ export default function EditWorkplanScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
         <View style={styles.center}><ActivityIndicator size="large" color={THEME.brand} /></View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerTitle: 'تعديل خطة العمل', headerTitleStyle: { color: '#FFFFFF', fontFamily: Typography.fonts.bold }, headerStyle: { backgroundColor: '#E65A2A' }, headerTintColor: '#FFFFFF' }} />
+    <SafeAreaView style={[styles.container, { direction: 'ltr' } as any]}>
+      <Stack.Screen options={{ headerTitle: 'Edit Work Plan', headerTitleStyle: { color: '#FFFFFF', fontFamily: Typography.fonts.bold }, headerStyle: { backgroundColor: '#E65A2A' }, headerTintColor: '#FFFFFF' }} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={styles.label}>الاسم</Text>
-          <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="اسم خطة العمل" placeholderTextColor={THEME.secondaryText} />
+          <Text style={styles.label}>Name</Text>
+          <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Work plan name" placeholderTextColor={THEME.secondaryText} />
 
-          <Text style={styles.label}>الوصف</Text>
-          <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="وصف مختصر" placeholderTextColor={THEME.secondaryText} multiline numberOfLines={3} />
+          <Text style={styles.label}>Description</Text>
+          <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Brief description" placeholderTextColor={THEME.secondaryText} multiline numberOfLines={3} />
 
-          <Text style={styles.sectionTitle}>المهام المحددة ({selectedIds.length})</Text>
+          <Text style={styles.sectionTitle}>Selected Tasks ({selectedIds.length})</Text>
           {selectedTodos.length === 0 ? (
-            <Text style={styles.emptyHint}>اختر مهاماً من القائمة أدناه</Text>
+            <Text style={styles.emptyHint}>Select tasks from the list below</Text>
           ) : (
             selectedTodos.map((todo: any, idx: number) => (
               <View key={todo.todoId} style={styles.todoRow}>
@@ -148,7 +148,7 @@ export default function EditWorkplanScreen() {
 
           {unselectedTodos.length > 0 && (
             <>
-              <Text style={styles.sectionTitle}>المهام المتاحة</Text>
+              <Text style={styles.sectionTitle}>Available Tasks</Text>
               {unselectedTodos.map((todo: any) => (
                 <TouchableOpacity key={todo.todoId} style={styles.todoRow} onPress={() => toggleTodo(todo.todoId)}>
                   <MaterialCommunityIcons name="plus-circle" size={22} color={THEME.brand} />
@@ -163,7 +163,7 @@ export default function EditWorkplanScreen() {
 
           <TouchableOpacity style={[styles.saveBtn, isSaving && { opacity: 0.6 }]} onPress={handleSave} disabled={isSaving}>
             {isSaving ? <ActivityIndicator color={THEME.white} /> : (
-              <><MaterialCommunityIcons name="check-circle" size={22} color={THEME.white} /><Text style={styles.saveText}>حفظ التغييرات</Text></>
+              <><MaterialCommunityIcons name="check-circle" size={22} color={THEME.white} /><Text style={styles.saveText}>Save Changes</Text></>
             )}
           </TouchableOpacity>
         </ScrollView>
@@ -177,14 +177,14 @@ function createStyles(THEME: any) {
   container: { flex: 1, backgroundColor: THEME.background },
   scroll: { padding: 20, paddingBottom: 40 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  label: { color: THEME.secondaryText, fontSize: 14, fontFamily: Typography.fonts.medium, marginBottom: 8, textAlign: 'right', marginTop: 16 },
-  input: { backgroundColor: THEME.inputBg, borderRadius: 14, padding: 16, color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.regular, textAlign: 'right', borderWidth: 1, borderColor: THEME.divider },
+  label: { color: THEME.secondaryText, fontSize: 14, fontFamily: Typography.fonts.medium, marginBottom: 8, textAlign: 'left', marginTop: 16 },
+  input: { backgroundColor: THEME.inputBg, borderRadius: 14, padding: 16, color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.regular, textAlign: 'left', borderWidth: 1, borderColor: THEME.divider },
   textArea: { minHeight: 80, textAlignVertical: 'top' },
-  sectionTitle: { color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.bold, marginTop: 24, marginBottom: 12, textAlign: 'right' },
+  sectionTitle: { color: THEME.text, fontSize: 16, fontFamily: Typography.fonts.bold, marginTop: 24, marginBottom: 12, textAlign: 'left' },
   emptyHint: { color: THEME.disabledText, fontSize: 14, fontFamily: Typography.fonts.regular, textAlign: 'center', marginVertical: 20 },
   todoRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: THEME.card, padding: 14, borderRadius: 12, marginBottom: 8, gap: 10, borderWidth: 1, borderColor: THEME.divider },
   removeBtn: { padding: 2 },
-  todoTitle: { flex: 1, color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.regular, textAlign: 'right' },
+  todoTitle: { flex: 1, color: THEME.text, fontSize: 15, fontFamily: Typography.fonts.regular, textAlign: 'left' },
   orderBadge: { backgroundColor: THEME.brand, color: THEME.white, fontSize: 12, fontFamily: Typography.fonts.bold, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, overflow: 'hidden', minWidth: 22, textAlign: 'center' },
   catBadge: { backgroundColor: 'rgba(216,67,21,0.1)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   catText: { color: THEME.brand, fontSize: 12, fontFamily: Typography.fonts.medium },
