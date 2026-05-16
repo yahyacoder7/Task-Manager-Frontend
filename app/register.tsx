@@ -137,14 +137,6 @@ export default function RegisterScreen() {
                   },
                 ]}
               >
-                <MaterialCommunityIcons
-                  name="account-outline"
-                  size={20}
-                  color={
-                    focusedInput === "name" ? theme.brand : theme.secondaryText
-                  }
-                  style={styles.inputIcon}
-                />
                 <TextInput
                   style={[styles.input, { color: theme.text }] as any}
                   placeholder="الاسم بالكامل"
@@ -153,6 +145,14 @@ export default function RegisterScreen() {
                   onChangeText={setName}
                   onFocus={() => setFocusedInput("name")}
                   onBlur={() => setFocusedInput(null)}
+                />
+                <MaterialCommunityIcons
+                  name="account-outline"
+                  size={20}
+                  color={
+                    focusedInput === "name" ? theme.brand : theme.secondaryText
+                  }
+                  style={styles.inputIcon}
                 />
               </View>
             </View>
@@ -185,14 +185,6 @@ export default function RegisterScreen() {
                   },
                 ]}
               >
-                <MaterialCommunityIcons
-                  name="email-outline"
-                  size={20}
-                  color={
-                    focusedInput === "email" ? theme.brand : theme.secondaryText
-                  }
-                  style={styles.inputIcon}
-                />
                 <TextInput
                   style={[styles.input, { color: theme.text }] as any}
                   placeholder="example@gmail.com"
@@ -203,6 +195,14 @@ export default function RegisterScreen() {
                   onBlur={() => setFocusedInput(null)}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                />
+                <MaterialCommunityIcons
+                  name="email-outline"
+                  size={20}
+                  color={
+                    focusedInput === "email" ? theme.brand : theme.secondaryText
+                  }
+                  style={styles.inputIcon}
                 />
               </View>
             </View>
@@ -237,16 +237,12 @@ export default function RegisterScreen() {
                   },
                 ]}
               >
-                <MaterialCommunityIcons
-                  name="lock-outline"
-                  size={20}
-                  color={
-                    focusedInput === "password"
-                      ? theme.brand
-                      : theme.secondaryText
-                  }
-                  style={styles.inputIcon}
-                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={20} color={theme.secondaryText} />
+                </TouchableOpacity>
                 <TextInput
                   style={[styles.input, { color: theme.text }] as any}
                   placeholder="••••••••"
@@ -257,12 +253,16 @@ export default function RegisterScreen() {
                   onBlur={() => setFocusedInput(null)}
                   secureTextEntry={!showPassword}
                 />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeIcon}
-                >
-                  <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={20} color={theme.secondaryText} />
-                </TouchableOpacity>
+                <MaterialCommunityIcons
+                  name="lock-outline"
+                  size={20}
+                  color={
+                    focusedInput === "password"
+                      ? theme.brand
+                      : theme.secondaryText
+                  }
+                  style={styles.inputIcon}
+                />
               </View>
             </View>
 
@@ -373,6 +373,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "100%",
+    alignItems: 'flex-end',
   },
   errorContainer: {
     backgroundColor: "rgba(234, 67, 53, 0.1)",
@@ -389,6 +390,8 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 18,
+    alignItems: 'flex-end',
+    width: '100%',
   },
   inputLabel: {
     fontSize: 14,
@@ -396,6 +399,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: "right",
     width: "100%",
+    alignSelf: "flex-end",
   },
   inputWrapper: {
     flexDirection: "row",
@@ -405,15 +409,17 @@ const styles = StyleSheet.create({
     height: 58,
     borderWidth: 1.5,
     borderColor: "transparent",
+    width: '100%',
   },
   inputIcon: {
-    marginRight: 12,
+    marginLeft: 12,
   },
   input: {
     flex: 1,
     fontSize: 16,
     textAlign: "right",
     writingDirection: "rtl",
+    marginRight: 10,
     // @ts-ignore
     outlineStyle: "none",
   } as any,
@@ -422,6 +428,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     height: 58,
+    width: '100%',
     borderRadius: 16,
     flexDirection: 'row',
     justifyContent: "center",
@@ -472,6 +479,8 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
     justifyContent: "center",
     alignItems: "center",
+    width: '100%',
+    marginTop: 10,
   },
   signupText: {
     fontSize: 15,

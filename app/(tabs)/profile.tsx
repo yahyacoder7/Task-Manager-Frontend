@@ -105,13 +105,17 @@ export default function ProfileScreen() {
       await deleteItem('userToken');
       await deleteItem('userData');
       await deleteItem('userEmail');
+      
+      // Force navigation to the root (Login screen)
+      if (Platform.OS === 'web') {
+        window.location.href = '/';
+      } else {
+        // Dismiss all tab routes and go back to login
+        router.replace('/');
+      }
     } catch (err) {
-      console.error("Error clearing storage:", err);
-    }
-    
-    if (Platform.OS === 'web') {
-      window.location.href = '/';
-    } else {
+      console.error("Error during logout:", err);
+      // Fallback redirect
       router.replace('/');
     }
   };

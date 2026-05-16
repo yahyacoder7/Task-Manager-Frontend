@@ -202,13 +202,6 @@ export default function LoginScreen() {
                       },
                     ]}
                   >
-                    <MaterialCommunityIcons name="email-outline"
-                      size={20}
-                      color={
-                        focusedInput === "email" ? theme.brand : theme.secondaryText
-                      }
-                      style={styles.inputIcon}
-                    />
                     <TextInput
                       style={[styles.input, { color: theme.text }] as any}
                       placeholder="example@gmail.com"
@@ -219,6 +212,13 @@ export default function LoginScreen() {
                       onBlur={() => setFocusedInput(null)}
                       keyboardType="email-address"
                       autoCapitalize="none"
+                    />
+                    <MaterialCommunityIcons name="email-outline"
+                      size={20}
+                      color={
+                        focusedInput === "email" ? theme.brand : theme.secondaryText
+                      }
+                      style={styles.inputIcon}
                     />
                   </View>
                 </View>
@@ -252,15 +252,12 @@ export default function LoginScreen() {
                       },
                     ]}
                   >
-                    <MaterialCommunityIcons name="lock-outline"
-                      size={20}
-                      color={
-                        focusedInput === "password"
-                          ? theme.brand
-                          : theme.secondaryText
-                      }
-                      style={styles.inputIcon}
-                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={styles.eyeIcon}
+                    >
+                      {showPassword ? <MaterialCommunityIcons name="eye-off" size={20} color={theme.secondaryText} /> : <MaterialCommunityIcons name="eye" size={20} color={theme.secondaryText} />}
+                    </TouchableOpacity>
                     <TextInput
                       style={[styles.input, { color: theme.text }] as any}
                       placeholder="••••••••••••"
@@ -271,12 +268,15 @@ export default function LoginScreen() {
                       onBlur={() => setFocusedInput(null)}
                       secureTextEntry={!showPassword}
                     />
-                    <TouchableOpacity
-                      onPress={() => setShowPassword(!showPassword)}
-                      style={styles.eyeIcon}
-                    >
-                      {showPassword ? <MaterialCommunityIcons name="eye-off" size={20} color={theme.secondaryText} /> : <MaterialCommunityIcons name="eye" size={20} color={theme.secondaryText} />}
-                    </TouchableOpacity>
+                    <MaterialCommunityIcons name="lock-outline"
+                      size={20}
+                      color={
+                        focusedInput === "password"
+                          ? theme.brand
+                          : theme.secondaryText
+                      }
+                      style={styles.inputIcon}
+                    />
                   </View>
                 </View>
 
@@ -401,6 +401,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "100%",
+    alignItems: 'flex-end',
   },
   errorContainer: {
     backgroundColor: "rgba(234, 67, 53, 0.1)",
@@ -417,6 +418,8 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 18,
+    alignItems: 'flex-end',
+    width: '100%',
   },
   inputLabel: {
     fontSize: 14,
@@ -424,6 +427,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: "right",
     width: '100%',
+    alignSelf: 'flex-end',
   },
   inputWrapper: {
     flexDirection: "row",
@@ -433,15 +437,17 @@ const styles = StyleSheet.create({
     height: 58,
     borderWidth: 1.5,
     borderColor: "transparent",
+    width: '100%',
   },
   inputIcon: {
-    marginRight: 12,
+    marginLeft: 12,
   },
   input: {
     flex: 1,
     fontSize: 16,
     textAlign: "right",
     writingDirection: "rtl",
+    marginRight: 10,
     // We handle the outline removal for web with a conditional prop or CSS-in-JS if needed,
     // but for now, we remove it from the standard RN StyleSheet to fix TS error.
     ...Platform.select({
@@ -454,7 +460,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   forgotPassword: {
-    alignSelf: "flex-start",
+    alignSelf: "flex-end",
     marginBottom: 32,
     marginTop: 4,
   },
@@ -464,6 +470,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     height: 58,
+    width: '100%',
     borderRadius: 16,
     flexDirection: 'row',
     justifyContent: "center",
@@ -507,13 +514,14 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.05)",
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   signupContainer: {
     flexDirection: "row-reverse",
     justifyContent: "center",
     alignItems: "center",
+    width: '100%',
+    marginTop: 10,
   },
   signupText: {
     fontSize: 15,
