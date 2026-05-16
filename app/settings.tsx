@@ -6,7 +6,7 @@ import { Typography } from '../constants/Typography';
 import { useAppTheme } from '../constants/ThemeContext';
 import { getItem } from '../utils/storage';
 
-const BASE_URL = "http://localhost:3000";
+import { BASE_URL } from '../constants/API';
 
 export default function SettingsScreen() {
   const { theme: THEME } = useAppTheme();

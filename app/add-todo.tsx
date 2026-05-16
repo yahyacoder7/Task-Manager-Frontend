@@ -11,7 +11,7 @@ import { Typography } from '../constants/Typography';
 import { useAppTheme } from '../constants/ThemeContext';
 import SmartDateTimePicker from '../components/SmartDateTimePicker';
 
-const BASE_URL = 'http://localhost:3000';
+import { BASE_URL } from '../constants/API';
 
 const TIME_OPTS = [
   { label: 'صباحاً', sub: 'من 5ص إلى 12ظهراً', value: 'MORNING',   icon: '🌅' },

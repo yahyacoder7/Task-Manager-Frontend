@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { saveItem } from "../utils/storage";
 
-const BASE_URL = "http://localhost:3000";
+import { BASE_URL } from '../constants/API';
 
 export default function VerifyOtpScreen() {
   const theme = Colors.dark;

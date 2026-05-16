@@ -10,7 +10,7 @@ import { getItem } from '../../utils/storage';
 import { Typography } from '../../constants/Typography';
 import { useAppTheme } from '../../constants/ThemeContext';
 
-const BASE_URL = 'http://localhost:3000';
+import { BASE_URL } from '../../constants/API';
 
 export default function EditWorkplanScreen() {
   const { id } = useLocalSearchParams();

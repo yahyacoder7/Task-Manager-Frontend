@@ -18,7 +18,7 @@ import {
 import { saveItem, getItem } from "../utils/storage";
 import { useEffect } from "react";
 
-const BASE_URL = "http://localhost:3000";
+import { BASE_URL } from "../constants/API";
 
 export default function LoginScreen() {
   const theme = Colors.dark;

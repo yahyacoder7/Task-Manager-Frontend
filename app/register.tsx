@@ -16,7 +16,7 @@ import {
   Image,
 } from "react-native";
 
-const BASE_URL = "http://localhost:3000";
+import { BASE_URL } from '../constants/API';
 
 export default function RegisterScreen() {
   const theme = Colors.dark;

@@ -13,7 +13,7 @@ import { formatDateShort, isToday } from '../../utils/date';
 import { Typography } from '../../constants/Typography';
 import { useAppTheme } from '../../constants/ThemeContext';
 
-const BASE_URL = 'http://localhost:3000';
+import { BASE_URL } from '../../constants/API';
 
 // ── Translation helpers ───────────────────────────────────────────────────────
 const REPEAT_UNIT_AR: Record<string, string> = {

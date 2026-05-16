@@ -10,7 +10,7 @@ import { Typography } from '../../constants/Typography';
 import { useAppTheme } from '../../constants/ThemeContext';
 import { Animated } from 'react-native';
 
-const BASE_URL = "http://localhost:3000";
+import { BASE_URL } from '../../constants/API';
 
 export default function ProfileScreen() {
   const { theme: THEME, isDark, toggleTheme } = useAppTheme();
