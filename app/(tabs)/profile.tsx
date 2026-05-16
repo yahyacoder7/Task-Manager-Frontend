@@ -4,7 +4,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getItem, deleteItem, saveItem } from '../../utils/storage';
 import { formatDateArabic } from '../../utils/date';
 import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useNavigation } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
 import { Typography } from '../../constants/Typography';
 import { useAppTheme } from '../../constants/ThemeContext';
@@ -13,7 +12,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { BASE_URL } from '../../constants/API';
 
 export default function ProfileScreen() {
-  const { theme: THEME, isDark, toggleTheme } = useAppTheme();
+  const { theme: THEME, isDark, toggleTheme, checkAuth } = useAppTheme();
   const styles = useMemo(() => createStyles(THEME), [THEME]);
   const { notifications, clearNotifications, refreshNotifications } = useNotifications();
   const [user, setUser] = useState<any>(null);
@@ -38,7 +37,6 @@ export default function ProfileScreen() {
   }, [showLogoutModal]);
   
   const router = useRouter();
-  const navigation = useNavigation();
   const params = useLocalSearchParams();
 
   useFocusEffect(
@@ -127,18 +125,11 @@ export default function ProfileScreen() {
       await deleteItem('userData');
       await deleteItem('userEmail');
       
-      // Reset entire navigation stack to root login screen
-      let rootNav: any = navigation;
-      while (rootNav.getParent()) {
-        rootNav = rootNav.getParent();
-      }
-      rootNav.reset({
-        index: 0,
-        routes: [{ name: 'index' }],
-      });
+      // The root layout will detect the missing token and
+      // automatically switch to auth-only screens (unmounting tabs)
+      checkAuth();
     } catch (err) {
       console.error("Error during logout:", err);
-      router.replace('/');
     }
   };
 

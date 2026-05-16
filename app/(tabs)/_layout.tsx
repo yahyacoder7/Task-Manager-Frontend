@@ -1,13 +1,12 @@
 import React, { useCallback } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { Typography } from '../../constants/Typography';
 import { useAppTheme } from '../../constants/ThemeContext';
 import NotificationOverlay from '../../components/NotificationOverlay';
 import { useNotifications } from '../../contexts/NotificationContext';
-import { getItem } from '../../utils/storage';
 import { useFocusEffect } from '@react-navigation/native';
 
 const iconMap: Record<string, string> = {
@@ -65,17 +64,10 @@ function MyTabBar({ state, navigation }: any) {
 }
 
 export default function TabLayout() {
-  const { theme: THEME } = useAppTheme();
-  const router = useRouter();
+  const { theme: THEME, checkAuth } = useAppTheme();
 
   useFocusEffect(
     useCallback(() => {
-      const checkAuth = async () => {
-        const token = await getItem('userToken');
-        if (!token) {
-          router.replace('/');
-        }
-      };
       checkAuth();
     }, [])
   );
