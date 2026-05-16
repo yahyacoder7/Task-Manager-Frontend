@@ -88,7 +88,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
+      style={[styles.container, { backgroundColor: theme.background }, { direction: 'rtl' } as any]}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView

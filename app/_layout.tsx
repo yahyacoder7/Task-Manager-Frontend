@@ -68,7 +68,7 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, direction: 'rtl' } as any}>
       <AppThemeProvider>
         <NavContent />
       </AppThemeProvider>
@@ -80,7 +80,7 @@ function NavContent() {
   const { isDark } = useAppTheme();
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, direction: 'rtl' } as any}>
       <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />

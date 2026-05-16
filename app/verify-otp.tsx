@@ -19,19 +19,22 @@ import { saveItem } from "../utils/storage";
 
 import { BASE_URL } from '../constants/API';
 
+const OTP_LENGTH = 6;
+
 export default function VerifyOtpScreen() {
   const theme = Colors.dark;
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email: string }>();
 
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [timer, setTimer] = useState(60);
   const [result, setResult] = useState<any>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
-  const inputRefs = useRef<Array<TextInput | null>>([]);
+  const hiddenInputRef = useRef<TextInput | null>(null);
 
   useEffect(() => {
     let interval: any;
@@ -43,41 +46,62 @@ export default function VerifyOtpScreen() {
     return () => clearInterval(interval);
   }, [timer]);
 
-  const handleOtpChange = (value: string, index: number) => {
-    // Handle Copy-Paste of multiple digits
-    if (value.length > 1) {
-      const pastedOtp = value.split("").slice(0, 6);
-      const newOtp = [...otp];
-      pastedOtp.forEach((char, i) => {
-        if (i < 6) newOtp[i] = char;
-      });
-      setOtp(newOtp);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      hiddenInputRef.current?.focus();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
-      // Focus the last filled input or the last one
-      const nextIndex = Math.min(pastedOtp.length, 5);
-      inputRefs.current[nextIndex]?.focus();
+  const getActiveIndex = (): number => {
+    const idx = otp.findIndex((d) => d === "");
+    return idx === -1 ? OTP_LENGTH - 1 : idx;
+  };
+
+  const handleChange = (value: string) => {
+    setError(null);
+
+    const digits = value.replace(/[^0-9]/g, "").split("").slice(0, OTP_LENGTH);
+
+    if (digits.length === 0) return;
+
+    if (digits.length > 1) {
+      const filled = [...otp];
+      digits.forEach((d, i) => {
+        if (i < OTP_LENGTH) filled[i] = d;
+      });
+      setOtp(filled);
       return;
     }
 
+    const activeIndex = getActiveIndex();
     const newOtp = [...otp];
-    newOtp[index] = value;
+    newOtp[activeIndex] = digits[0];
     setOtp(newOtp);
+  };
 
-    // Auto-focus next input
-    if (value !== "" && index < 5) {
-      inputRefs.current[index + 1]?.focus();
+  const handleKeyPress = (e: any) => {
+    if (e.nativeEvent.key === "Backspace") {
+      const activeIndex = getActiveIndex();
+      const newOtp = [...otp];
+
+      if (newOtp[activeIndex] !== "") {
+        newOtp[activeIndex] = "";
+        setOtp(newOtp);
+      } else if (activeIndex > 0) {
+        newOtp[activeIndex - 1] = "";
+        setOtp(newOtp);
+      }
     }
   };
 
-  const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === "Backspace" && otp[index] === "" && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+  const handleBoxPress = () => {
+    hiddenInputRef.current?.focus();
   };
 
   const handleVerify = async () => {
     const otpString = otp.join("");
-    if (otpString.length < 6) {
+    if (otpString.length < OTP_LENGTH) {
       setError("يرجى إدخال رمز التحقق كاملاً");
       return;
     }
@@ -100,15 +124,11 @@ export default function VerifyOtpScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        // Save using our cross-platform utility
         await saveItem('userToken', data.access_token);
         await saveItem('userData', JSON.stringify(data.user));
         
         setResult(data);
         console.log("Verify Success:", data);
-        // We can navigate immediately or stay on success screen. 
-        // Let's stay for a second then navigate or let user click.
-        // For better UX, let's auto navigate after 1.5s
         setTimeout(() => {
           router.replace("/(tabs)");
         }, 1500);
@@ -151,7 +171,7 @@ export default function VerifyOtpScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
+      style={[styles.container, { backgroundColor: theme.background }, { direction: 'rtl' } as any]}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
@@ -161,6 +181,7 @@ export default function VerifyOtpScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           {result ? (
             <View style={styles.successContainer}>
@@ -199,7 +220,7 @@ export default function VerifyOtpScreen() {
                 style={[styles.backButton, { marginTop: 20 }]}
                 onPress={() => {
                   setResult(null);
-                  setOtp(["", "", "", "", "", ""]);
+                  setOtp(Array(OTP_LENGTH).fill(""));
                   router.replace("/register");
                 }}
               >
@@ -217,13 +238,11 @@ export default function VerifyOtpScreen() {
             <>
               <View style={styles.header}>
                 <View style={styles.logoContainer}>
-                  {/* 🚩🚩🚩 CHANGE LOGO HERE 🚩🚩🚩 */}
                   <Image 
                     source={require("../assets/images/logo.png")} 
                     style={styles.logoImage}
                     resizeMode="contain"
                   />
-                  {/* 🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩🚩 */}
                   <Text style={[styles.appName, { color: theme.text }]}>Task Flow</Text>
                 </View>
                 <Text style={[styles.welcomeText, { color: theme.text }]}>
@@ -262,30 +281,56 @@ export default function VerifyOtpScreen() {
                   </View>
                 )}
 
-                <View style={styles.otpContainer}>
-                  {otp.map((digit, index) => (
-                    <TextInput
-                      key={index}
-                      ref={(ref) => {
-                        inputRefs.current[index] = ref;
-                      }}
-                      style={[
-                        styles.otpInput,
-                        {
-                          backgroundColor: theme.secondaryBackground,
-                          color: theme.text,
-                          borderColor: digit ? theme.brand : "transparent",
-                          borderWidth: digit ? 1 : 0,
-                        },
-                      ]}
-                      maxLength={1}
-                      keyboardType="number-pad"
-                      value={digit}
-                      onChangeText={(value) => handleOtpChange(value, index)}
-                      onKeyPress={(e) => handleKeyPress(e, index)}
-                    />
-                  ))}
-                </View>
+                <TouchableOpacity
+                  style={styles.otpContainer}
+                  onPress={handleBoxPress}
+                  activeOpacity={1}
+                >
+                  {otp.map((digit, index) => {
+                    const isActive = digit === "" && index === getActiveIndex();
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          styles.otpBox,
+                          {
+                            backgroundColor: isActive && isFocused
+                              ? "rgba(216, 67, 21, 0.15)"
+                              : theme.secondaryBackground,
+                            borderColor: digit
+                              ? theme.brand
+                              : isActive && isFocused
+                              ? theme.brand
+                              : "transparent",
+                            borderWidth: digit || (isActive && isFocused) ? 2 : 1,
+                          },
+                        ]}
+                      >
+                        <Text style={[styles.otpDigit, { color: theme.text }]}>
+                          {digit}
+                        </Text>
+                        {isActive && isFocused && (
+                          <View style={styles.cursor} />
+                        )}
+                      </View>
+                    );
+                  })}
+                </TouchableOpacity>
+
+                <TextInput
+                  ref={hiddenInputRef}
+                  style={styles.hiddenInput}
+                  value={otp.join("")}
+                  onChangeText={handleChange}
+                  onKeyPress={handleKeyPress}
+                  keyboardType="number-pad"
+                  maxLength={OTP_LENGTH}
+                  caretHidden
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  autoComplete="sms-otp"
+                  textContentType="oneTimeCode"
+                />
 
                 <View style={styles.resendContainer}>
                   <Text
@@ -401,13 +446,29 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     paddingHorizontal: 10,
   },
-  otpInput: {
-    width: 45,
-    height: 55,
+  otpBox: {
+    width: 48,
+    height: 58,
     borderRadius: 12,
-    textAlign: "center",
-    fontSize: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  otpDigit: {
+    fontSize: 22,
     fontWeight: "bold",
+  },
+  cursor: {
+    position: "absolute",
+    right: 14,
+    width: 2,
+    height: 24,
+    backgroundColor: "#D84315",
+  },
+  hiddenInput: {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    opacity: 0,
   },
   errorContainer: {
     backgroundColor: "rgba(234, 67, 53, 0.1)",
