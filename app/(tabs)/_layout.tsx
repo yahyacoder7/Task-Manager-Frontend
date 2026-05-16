@@ -43,7 +43,7 @@ function MyTabBar({ state, navigation }: any) {
         return (
           <TouchableOpacity key={route.name} onPress={() => navigation.navigate(route.name)} activeOpacity={0.7}
             style={{ flex: 1, marginHorizontal: 6, borderRadius: 14, alignItems: 'center', justifyContent: 'center', paddingVertical: 6, backgroundColor: focused ? THEME.secondaryBackground : 'transparent' }}>
-            <MaterialCommunityIcons name={iconMap[tab.icon]} size={20} color={focused ? '#E65A2A' : 'rgba(255,255,255,0.55)'} />
+            <MaterialCommunityIcons name={iconMap[tab.icon] as any} size={20} color={focused ? '#E65A2A' : 'rgba(255,255,255,0.55)'} />
             <Text style={{ fontSize: 10, fontFamily: Typography.fonts.medium, color: focused ? '#E65A2A' : 'rgba(255,255,255,0.55)', marginTop: 2 }}>{tab.label}</Text>
           </TouchableOpacity>
         );

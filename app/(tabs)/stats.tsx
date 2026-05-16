@@ -172,7 +172,7 @@ export default function StatsScreen() {
                 const match = timeDist.find((t: any) => t.label?.includes(period.label));
                 return (
                   <View key={idx} style={styles.timeChip}>
-                    <MaterialCommunityIcons name={period.icon} size={20} color={THEME.secondaryText} />
+                    <MaterialCommunityIcons name={period.icon as any} size={20} color={THEME.secondaryText} />
                     <Text style={styles.timeCount}>{match?.count ?? 0}</Text>
                     <Text style={styles.timeLabel}>{period.label}</Text>
                   </View>
