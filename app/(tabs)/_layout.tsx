@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
 import { Platform, Text, TouchableOpacity, View } from 'react-native';
@@ -8,6 +8,7 @@ import { useAppTheme } from '../../constants/ThemeContext';
 import NotificationOverlay from '../../components/NotificationOverlay';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { getItem } from '../../utils/storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 const iconMap: Record<string, string> = {
   ChartBar: 'chart-bar',
@@ -17,10 +18,10 @@ const iconMap: Record<string, string> = {
 };
 
 const TABS = [
-  { name: 'index', icon: 'List', label: 'B-Village' },
-  { name: 'plans', icon: 'Calendar', label: 'Missions' },
-  { name: 'stats', icon: 'ChartBar', label: 'Action Plans' },
-  { name: 'profile', icon: 'User', label: 'Statistics' },
+  { name: 'profile', icon: 'User', label: 'Profile' },
+  { name: 'index', icon: 'List', label: 'Tasks' },
+  { name: 'plans', icon: 'Calendar', label: 'Work Plans' },
+  { name: 'stats', icon: 'ChartBar', label: 'Statistics' },
 ];
 
 function HeaderTitle({ title }: { title: string }) {
@@ -67,15 +68,17 @@ export default function TabLayout() {
   const { theme: THEME } = useAppTheme();
   const router = useRouter();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = await getItem('userToken');
-      if (!token) {
-        router.replace('/');
-      }
-    };
-    checkAuth();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const checkAuth = async () => {
+        const token = await getItem('userToken');
+        if (!token) {
+          router.replace('/');
+        }
+      };
+      checkAuth();
+    }, [])
+  );
 
   return (
     <View style={{ flex: 1 }}>
@@ -96,10 +99,10 @@ export default function TabLayout() {
           headerLeft: () => null,
           headerShown: true,
         }}>
-        <Tabs.Screen name="index" options={{ headerLeft: () => <HeaderTitle title="B-Village" /> }} />
-        <Tabs.Screen name="plans" options={{ headerLeft: () => <HeaderTitle title="Missions" /> }} />
-        <Tabs.Screen name="stats" options={{ headerLeft: () => <HeaderTitle title="Action Plans" /> }} />
-        <Tabs.Screen name="profile" options={{ headerLeft: () => <HeaderTitle title="Statistics" /> }} />
+        <Tabs.Screen name="profile" options={{ headerLeft: () => <HeaderTitle title="Profile" /> }} />
+        <Tabs.Screen name="index" options={{ headerLeft: () => <HeaderTitle title="Tasks" /> }} />
+        <Tabs.Screen name="plans" options={{ headerLeft: () => <HeaderTitle title="Work Plans" /> }} />
+        <Tabs.Screen name="stats" options={{ headerLeft: () => <HeaderTitle title="Statistics" /> }} />
       </Tabs>
       <NotificationOverlay />
     </View>

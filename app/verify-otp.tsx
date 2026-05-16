@@ -4,6 +4,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -16,8 +17,6 @@ import {
   View,
   Image,
 } from "react-native";
-import { saveItem } from "../utils/storage";
-
 import { BASE_URL } from '../constants/API';
 
 const OTP_LENGTH = 6;
@@ -36,6 +35,20 @@ export default function VerifyOtpScreen() {
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   const inputRefs = useRef<(TextInput | null)[]>([]);
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showSuccess) {
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        damping: 10,
+        stiffness: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      scaleAnim.setValue(0);
+    }
+  }, [showSuccess]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -135,17 +148,10 @@ export default function VerifyOtpScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        if (data.access_token) {
-          await saveItem('userToken', String(data.access_token));
-        }
-        if (data.user) {
-          await saveItem('userData', JSON.stringify(data.user));
-        }
-        
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
-          router.replace("/(tabs)");
+          router.replace("/");
         }, 2000);
       } else {
         setError(data.message || "Invalid or expired verification code.");
@@ -337,19 +343,31 @@ export default function VerifyOtpScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <Modal visible={showSuccess} transparent animationType="fade">
+      <Modal visible={showSuccess} transparent animationType="fade" statusBarTranslucent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: theme.secondaryBackground }]}>
+          <Animated.View
+            style={[
+              styles.modalCard,
+              { backgroundColor: theme.secondaryBackground, transform: [{ scale: scaleAnim }] },
+            ]}
+          >
             <View style={styles.modalIconWrap}>
-              <MaterialCommunityIcons name="check-circle" size={56} color="#4CAF50" />
+              <MaterialCommunityIcons name="check-circle-outline" size={44} color="#4CAF50" />
             </View>
             <Text style={[styles.modalTitle, { color: theme.text }]}>
               Registration Successful
             </Text>
-            <Text style={[styles.modalSubtitle, { color: theme.secondaryText }]}>
-              Welcome to Task Flow
+            <Text style={[styles.modalDescription, { color: theme.secondaryText }]}>
+              Your account has been created. Please sign in to get started.
             </Text>
-          </View>
+            <View style={[styles.modalDivider, { backgroundColor: theme.divider }]} />
+            <View style={styles.modalLoaderRow}>
+              <ActivityIndicator size="small" color={theme.brand} />
+              <Text style={[styles.modalLoaderText, { color: theme.secondaryText }]}>
+                Redirecting to login...
+              </Text>
+            </View>
+          </Animated.View>
         </View>
       </Modal>
     </SafeAreaView>
@@ -491,28 +509,29 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: "rgba(0,0,0,0.65)",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 24,
   },
   modalCard: {
-    width: "80%",
+    width: "100%",
     maxWidth: 320,
-    borderRadius: 24,
-    paddingVertical: 40,
-    paddingHorizontal: 32,
+    borderRadius: 28,
+    paddingVertical: 44,
+    paddingHorizontal: 36,
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 24,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.4,
+    shadowRadius: 32,
+    elevation: 16,
   },
   modalIconWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "rgba(76, 175, 80, 0.15)",
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "rgba(76, 175, 80, 0.12)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
@@ -521,11 +540,29 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "700",
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 10,
+    letterSpacing: 0.3,
   },
-  modalSubtitle: {
-    fontSize: 15,
+  modalDescription: {
+    fontSize: 14,
     textAlign: "center",
     lineHeight: 22,
+    marginBottom: 0,
+  },
+  modalDivider: {
+    width: 40,
+    height: 2,
+    borderRadius: 1,
+    marginTop: 24,
+    marginBottom: 20,
+  },
+  modalLoaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  modalLoaderText: {
+    fontSize: 13,
+    textAlign: "center",
   },
 });

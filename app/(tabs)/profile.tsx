@@ -1,14 +1,13 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView, ActivityIndicator, Animated, Modal } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getItem, deleteItem, saveItem } from '../../utils/storage';
 import { formatDateArabic } from '../../utils/date';
 import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
-import { useCallback, useRef } from 'react';
 import { Typography } from '../../constants/Typography';
 import { useAppTheme } from '../../constants/ThemeContext';
-import { Animated } from 'react-native';
 import { useNotifications } from '../../contexts/NotificationContext';
 
 import { BASE_URL } from '../../constants/API';
@@ -21,9 +20,25 @@ export default function ProfileScreen() {
   const [stats, setStats] = useState({ completed: 0, incomplete: 0 });
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const toastOpacity = useRef(new Animated.Value(0)).current;
+  const logoutScale = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showLogoutModal) {
+      Animated.spring(logoutScale, {
+        toValue: 1,
+        damping: 10,
+        stiffness: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      logoutScale.setValue(0);
+    }
+  }, [showLogoutModal]);
   
   const router = useRouter();
+  const navigation = useNavigation();
   const params = useLocalSearchParams();
 
   useFocusEffect(
@@ -103,31 +118,28 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      "Sign Out",
-      "Are you sure you want to sign out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "OK", onPress: async () => {
-          try {
-            await deleteItem('userToken');
-            await deleteItem('userData');
-            await deleteItem('userEmail');
-            
-            // محاولة تفريغ الشاشات المتكدسة إن وجدت للتأكد من الخروج من الـ Tabs
-            if (router.canDismiss()) {
-              router.dismissAll();
-            }
-            
-            // التوجيه إلى الشاشة الرئيسية (تسجيل الدخول)
-            router.replace('/');
-          } catch (err) {
-            console.error("Error during logout:", err);
-            router.replace('/');
-          }
-        }}
-      ]
-    );
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    try {
+      await deleteItem('userToken');
+      await deleteItem('userData');
+      await deleteItem('userEmail');
+      
+      // Reset entire navigation stack to root login screen
+      let rootNav: any = navigation;
+      while (rootNav.getParent()) {
+        rootNav = rootNav.getParent();
+      }
+      rootNav.reset({
+        index: 0,
+        routes: [{ name: 'index' }],
+      });
+    } catch (err) {
+      console.error("Error during logout:", err);
+      router.replace('/');
+    }
   };
 
   const GlassCard = ({ children, style }: any) => {
@@ -276,6 +288,41 @@ export default function ProfileScreen() {
           <Text style={styles.toastText}>Name updated successfully</Text>
         </Animated.View>
       )}
+
+      <Modal visible={showLogoutModal} transparent animationType="fade" statusBarTranslucent>
+        <View style={styles.modalOverlay}>
+          <Animated.View
+            style={[
+              styles.modalCard,
+              { backgroundColor: THEME.secondaryBackground, transform: [{ scale: logoutScale }] },
+            ]}
+          >
+            <View style={[styles.modalIconWrapLogout, { backgroundColor: 'rgba(234, 67, 53, 0.12)' }]}>
+              <MaterialCommunityIcons name="logout" size={28} color="#EA4335" />
+            </View>
+            <Text style={[styles.modalTitle, { color: THEME.text }]}>
+              Sign Out
+            </Text>
+            <Text style={[styles.modalDescription, { color: THEME.secondaryText }]}>
+              Are you sure you want to sign out?
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.modalBtnCancel, { borderColor: THEME.divider }]}
+                onPress={() => setShowLogoutModal(false)}
+              >
+                <Text style={[styles.modalBtnText, { color: THEME.text }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalBtn, styles.modalBtnConfirm, { backgroundColor: '#EA4335' }]}
+                onPress={confirmLogout}
+              >
+                <Text style={[styles.modalBtnText, { color: '#FFFFFF' }]}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -581,6 +628,73 @@ toastContainer: {
     fontSize: 14,
     fontWeight: 'bold',
     fontFamily: Typography.fonts.medium,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 320,
+    borderRadius: 28,
+    paddingVertical: 40,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.4,
+    shadowRadius: 32,
+    elevation: 16,
+  },
+  modalIconWrapLogout: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 10,
+    letterSpacing: 0.3,
+  },
+  modalDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 28,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBtnCancel: {
+    borderWidth: 1,
+  },
+  modalBtnConfirm: {
+    shadowColor: '#EA4335',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  modalBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 }

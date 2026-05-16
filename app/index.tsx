@@ -1,10 +1,12 @@
 import Colors from "@/constants/Colors";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -16,9 +18,8 @@ import {
   Image,
 } from "react-native";
 import { saveItem, getItem } from "../utils/storage";
-import { useEffect } from "react";
+
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from "react";
 
 import { BASE_URL } from "../constants/API";
 
@@ -31,8 +32,22 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [loginResult, setLoginResult] = useState<any>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showSuccess) {
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        damping: 10,
+        stiffness: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      scaleAnim.setValue(0);
+    }
+  }, [showSuccess]);
 
   useEffect(() => {
     checkLoginStatus();
@@ -59,7 +74,6 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     setError(null);
-    setLoginResult(null);
 
     try {
       const response = await fetch(`${BASE_URL}/auth/login`, {
@@ -79,8 +93,11 @@ export default function LoginScreen() {
         await saveItem('userToken', data.access_token);
         await saveItem('userData', JSON.stringify(data.user));
         
-        console.log("Login Success:", data);
-        router.replace("/(tabs)");
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          router.replace("/(tabs)");
+        }, 2000);
       } else {
         setError(data.message || "Login failed. Please check your credentials.");
       }
@@ -106,153 +123,130 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {loginResult ? (
-            <View style={styles.successContainer}>
-              <MaterialCommunityIcons name="check-circle" size={80} color="#4CAF50" />
-              <Text style={[styles.successTitle, { color: theme.text }]}>
-                Login Successful!
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Image 
+                source={require("../assets/images/logo.png")} 
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+              <Text style={[styles.appName, { color: theme.text }]}>
+                Task Flow
               </Text>
-              <View
-                style={[
-                  styles.resultCard,
-                  { backgroundColor: theme.secondaryBackground },
-                ]}
-              >
-                <Text style={[styles.resultText, { color: theme.text }]}>
-                  User Data:
-                </Text>
-                <Text style={[styles.jsonText, { color: theme.secondaryText }]}>
-                  {JSON.stringify(loginResult.user, null, 2)}
-                </Text>
-                <Text
-                  style={[
-                    styles.resultText,
-                    { color: theme.text, marginTop: 16 },
-                  ]}
-                >
-                  Token:
-                </Text>
-                <Text
-                  style={[styles.jsonText, { color: theme.secondaryText }]}
-                  numberOfLines={3}
-                >
-                  {loginResult.access_token}
-                </Text>
+            </View>
+            <Text style={[styles.welcomeText, { color: theme.text }]}>
+              Welcome back to Task Flow
+            </Text>
+          </View>
+
+          <View style={styles.form}>
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
               </View>
-              <TouchableOpacity
-                style={[
-                  styles.loginButton,
-                  {
-                    backgroundColor: theme.brand,
-                    width: "100%",
-                    marginTop: 24,
-                  },
-                ]}
-                onPress={() => setLoginResult(null)}
-              >
-                <Text style={styles.loginButtonText}>Back to Login</Text>
+            )}
+
+            <View style={styles.inputGroup}>
+              <Text style={[styles.inputLabel, { color: theme.brand }]}>
+                Email
+              </Text>
+              <View style={[styles.inputWrapper, { backgroundColor: theme.secondaryBackground }]}>
+                <MaterialCommunityIcons name="email-outline" size={20} color={theme.secondaryText} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: theme.text }]}
+                  placeholder="example@gmail.com"
+                  placeholderTextColor={theme.secondaryText}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={[styles.inputLabel, { color: theme.brand }]}>
+                Password
+              </Text>
+              <View style={[styles.inputWrapper, { backgroundColor: theme.secondaryBackground }]}>
+                <MaterialCommunityIcons name="lock-outline" size={20} color={theme.secondaryText} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: theme.text }]}
+                  placeholder="Enter your password"
+                  placeholderTextColor={theme.secondaryText}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                  <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={20} color={theme.secondaryText} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text style={[styles.forgotPasswordText, { color: theme.brand }]}>
+                Forgot Password?
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={[styles.loginButton, { backgroundColor: theme.brand }]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="login-variant" size={20} color="#FFFFFF" />
+                  <Text style={styles.loginButtonText}>Sign In</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.signupContainer}>
+              <Text style={[styles.signupText, { color: theme.text }]}>
+                Don&apos;t have an account?{" "}
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/register")}>
+                <Text style={[styles.signupLink, { color: theme.brand }]}>
+                  Sign Up
+                </Text>
               </TouchableOpacity>
             </View>
-          ) : (
-            <>
-              <View style={styles.header}>
-                <View style={styles.logoContainer}>
-                  <Image 
-                    source={require("../assets/images/logo.png")} 
-                    style={styles.logoImage}
-                    resizeMode="contain"
-                  />
-                  <Text style={[styles.appName, { color: theme.text }]}>
-                    Task Flow
-                  </Text>
-                </View>
-                <Text style={[styles.welcomeText, { color: theme.text }]}>
-                  Welcome back to Task Flow
-                </Text>
-              </View>
-
-              <View style={styles.form}>
-                {error && (
-                  <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{error}</Text>
-                  </View>
-                )}
-
-                <View style={styles.inputGroup}>
-                  <Text style={[styles.inputLabel, { color: theme.brand }]}>
-                    Email
-                  </Text>
-                  <View style={[styles.inputWrapper, { backgroundColor: theme.secondaryBackground }]}>
-                    <MaterialCommunityIcons name="email-outline" size={20} color={theme.secondaryText} style={styles.inputIcon} />
-                    <TextInput
-                      style={[styles.input, { color: theme.text }]}
-                      placeholder="example@gmail.com"
-                      placeholderTextColor={theme.secondaryText}
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={[styles.inputLabel, { color: theme.brand }]}>
-                    Password
-                  </Text>
-                  <View style={[styles.inputWrapper, { backgroundColor: theme.secondaryBackground }]}>
-                    <MaterialCommunityIcons name="lock-outline" size={20} color={theme.secondaryText} style={styles.inputIcon} />
-                    <TextInput
-                      style={[styles.input, { color: theme.text }]}
-                      placeholder="Enter your password"
-                      placeholderTextColor={theme.secondaryText}
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry={!showPassword}
-                    />
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-                      <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={20} color={theme.secondaryText} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <TouchableOpacity style={styles.forgotPassword}>
-                  <Text style={[styles.forgotPasswordText, { color: theme.brand }]}>
-                    Forgot Password?
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={[styles.loginButton, { backgroundColor: theme.brand }]}
-                  onPress={handleLogin}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <>
-                      <MaterialCommunityIcons name="login-variant" size={20} color="#FFFFFF" />
-                      <Text style={styles.loginButtonText}>Sign In</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-
-                <View style={styles.signupContainer}>
-                  <Text style={[styles.signupText, { color: theme.text }]}>
-                    Don&apos;t have an account?{" "}
-                  </Text>
-                  <TouchableOpacity onPress={() => router.push("/register")}>
-                    <Text style={[styles.signupLink, { color: theme.brand }]}>
-                      Sign Up
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </>
-          )}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal visible={showSuccess} transparent animationType="fade" statusBarTranslucent>
+        <View style={styles.modalOverlay}>
+          <Animated.View
+            style={[
+              styles.modalCard,
+              { backgroundColor: theme.secondaryBackground, transform: [{ scale: scaleAnim }] },
+            ]}
+          >
+            <View style={styles.modalIconWrap}>
+              <MaterialCommunityIcons name="check-circle-outline" size={44} color="#4CAF50" />
+            </View>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Welcome Back
+            </Text>
+            <Text style={[styles.modalDescription, { color: theme.secondaryText }]}>
+              Signed in successfully. Redirecting to your dashboard...
+            </Text>
+            <View style={[styles.modalDivider, { backgroundColor: theme.divider }]} />
+            <View style={styles.modalLoaderRow}>
+              <ActivityIndicator size="small" color={theme.brand} />
+              <Text style={[styles.modalLoaderText, { color: theme.secondaryText }]}>
+                Redirecting...
+              </Text>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -385,30 +379,62 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
   },
-  successContainer: {
-    width: "100%",
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.65)",
+    justifyContent: "center",
     alignItems: "center",
-    paddingTop: 40,
+    paddingHorizontal: 24,
   },
-  successTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  resultCard: {
+  modalCard: {
     width: "100%",
-    padding: 20,
-    borderRadius: 16,
+    maxWidth: 320,
+    borderRadius: 28,
+    paddingVertical: 44,
+    paddingHorizontal: 36,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.4,
+    shadowRadius: 32,
+    elevation: 16,
   },
-  resultText: {
-    fontSize: 16,
-    fontWeight: "bold",
+  modalIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "rgba(76, 175, 80, 0.12)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    textAlign: "center",
     marginBottom: 10,
+    letterSpacing: 0.3,
   },
-  jsonText: {
+  modalDescription: {
     fontSize: 14,
-    fontFamily: Platform.OS === "ios" ? "Courier" : "monospace",
-    lineHeight: 20,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 0,
+  },
+  modalDivider: {
+    width: 40,
+    height: 2,
+    borderRadius: 1,
+    marginTop: 24,
+    marginBottom: 20,
+  },
+  modalLoaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  modalLoaderText: {
+    fontSize: 13,
+    textAlign: "center",
   },
 });
