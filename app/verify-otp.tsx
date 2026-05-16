@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -31,7 +32,7 @@ export default function VerifyOtpScreen() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [timer, setTimer] = useState(60);
-  const [result, setResult] = useState<any>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   const inputRefs = useRef<(TextInput | null)[]>([]);
@@ -134,8 +135,6 @@ export default function VerifyOtpScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Verify Response:", JSON.stringify(data));
-        
         if (data.access_token) {
           await saveItem('userToken', String(data.access_token));
         }
@@ -143,11 +142,11 @@ export default function VerifyOtpScreen() {
           await saveItem('userData', JSON.stringify(data.user));
         }
         
-        setResult(data);
-        console.log("Verify Success:", data);
+        setShowSuccess(true);
         setTimeout(() => {
-          router.replace("/");
-        }, 1500);
+          setShowSuccess(false);
+          router.replace("/(tabs)");
+        }, 2000);
       } else {
         setError(data.message || "Invalid or expired verification code.");
       }
@@ -204,194 +203,155 @@ export default function VerifyOtpScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="always"
         >
-          {result ? (
-            <View style={styles.successContainer}>
-              <MaterialCommunityIcons name="check-circle" size={80} color="#4CAF50" />
-              <Text style={[styles.successTitle, { color: theme.text }]}>
-                Account Created Successfully!
-              </Text>
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Image 
+                source={require("../assets/images/logo.png")} 
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+              <Text style={[styles.appName, { color: theme.text }]}>Task Flow</Text>
+            </View>
+            <Text style={[styles.welcomeText, { color: theme.text }]}>
+              Verify Code
+            </Text>
+            <Text
+              style={[styles.description, { color: theme.secondaryText }]}
+            >
+              Enter the 6-digit code sent to your email
+            </Text>
+            <Text style={[styles.emailText, { color: theme.brand }]}>
+              {email}
+            </Text>
+          </View>
+
+          <View style={styles.form}>
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
+            {successMessage && (
               <View
                 style={[
-                  styles.resultCard,
-                  { backgroundColor: theme.secondaryBackground },
-                ]}
-              >
-                <Text style={[styles.resultText, { color: theme.text }]}>
-                  Welcome: {result.user.name}
-                </Text>
-                <Text style={[styles.jsonText, { color: theme.secondaryText }]}>
-                  {JSON.stringify(result.user, null, 2)}
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={[
-                  styles.loginButton,
+                  styles.errorContainer,
                   {
-                    backgroundColor: theme.brand,
-                    width: "100%",
-                    marginTop: 24,
+                    borderColor: "#4CAF50",
+                    backgroundColor: "rgba(76, 175, 80, 0.1)",
                   },
                 ]}
-                onPress={() => router.replace("/")}
               >
-                <Text style={styles.loginButtonText}>Go to Sign In</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.backButton, { marginTop: 20 }]}
-                onPress={() => {
-                  setResult(null);
-                  setOtp(Array(OTP_LENGTH).fill(""));
-                  router.replace("/register");
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="account-plus-outline"
-                  size={20}
-                  color={theme.brand}
-                />
-                <Text style={[styles.backText, { color: theme.brand }]}>
-                  Create Another Account
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <View style={styles.header}>
-                <View style={styles.logoContainer}>
-                  <Image 
-                    source={require("../assets/images/logo.png")} 
-                    style={styles.logoImage}
-                    resizeMode="contain"
-                  />
-                  <Text style={[styles.appName, { color: theme.text }]}>Task Flow</Text>
-                </View>
-                <Text style={[styles.welcomeText, { color: theme.text }]}>
-                  Verify Code
-                </Text>
-                <Text
-                  style={[styles.description, { color: theme.secondaryText }]}
-                >
-                  Enter the 6-digit code sent to your email
-                </Text>
-                <Text style={[styles.emailText, { color: theme.brand }]}>
-                  {email}
+                <Text style={[styles.errorText, { color: "#4CAF50" }]}>
+                  {successMessage}
                 </Text>
               </View>
+            )}
 
-              <View style={styles.form}>
-                {error && (
-                  <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{error}</Text>
-                  </View>
-                )}
-
-                {successMessage && (
-                  <View
-                    style={[
-                      styles.errorContainer,
-                      {
-                        borderColor: "#4CAF50",
-                        backgroundColor: "rgba(76, 175, 80, 0.1)",
-                      },
-                    ]}
+            <View style={styles.otpContainer}>
+              {otp.map((digit, index) => {
+                const isFilled = digit !== "";
+                const isActive = index === focusedIndex;
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.otpTouch}
+                    activeOpacity={1}
+                    onPress={() => focusInput(index)}
                   >
-                    <Text style={[styles.errorText, { color: "#4CAF50" }]}>
-                      {successMessage}
-                    </Text>
-                  </View>
-                )}
+                    <TextInput
+                      ref={(ref) => {
+                        inputRefs.current[index] = ref;
+                      }}
+                      style={[
+                        styles.otpBox,
+                        {
+                          backgroundColor: isActive
+                            ? "rgba(216, 67, 21, 0.1)"
+                            : theme.secondaryBackground,
+                          borderColor: isFilled
+                            ? theme.brand
+                            : isActive
+                            ? theme.brand
+                            : "rgba(255,255,255,0.15)",
+                          borderWidth: 2,
+                        },
+                      ]}
+                      maxLength={1}
+                      keyboardType="numeric"
+                      value={digit}
+                      onChangeText={(val) => handleChange(val, index)}
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      onFocus={() => setFocusedIndex(index)}
+                      textAlign="center"
+                      editable
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
-                <View style={styles.otpContainer}>
-                  {otp.map((digit, index) => {
-                    const isFilled = digit !== "";
-                    const isActive = index === focusedIndex;
-                    return (
-                      <TouchableOpacity
-                        key={index}
-                        style={styles.otpTouch}
-                        activeOpacity={1}
-                        onPress={() => focusInput(index)}
-                      >
-                        <TextInput
-                          ref={(ref) => {
-                            inputRefs.current[index] = ref;
-                          }}
-                          style={[
-                            styles.otpBox,
-                            {
-                              backgroundColor: isActive
-                                ? "rgba(216, 67, 21, 0.1)"
-                                : theme.secondaryBackground,
-                              borderColor: isFilled
-                                ? theme.brand
-                                : isActive
-                                ? theme.brand
-                                : "rgba(255,255,255,0.15)",
-                              borderWidth: 2,
-                            },
-                          ]}
-                          maxLength={1}
-                          keyboardType="numeric"
-                          value={digit}
-                          onChangeText={(val) => handleChange(val, index)}
-                          onKeyPress={(e) => handleKeyPress(e, index)}
-                          onFocus={() => setFocusedIndex(index)}
-                          textAlign="center"
-                          editable
-                        />
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-
-                <View style={styles.resendContainer}>
-                  <Text style={[styles.resendText, { color: theme.secondaryText }]}>
-                    Didn't receive a code?{" "}
-                  </Text>
-                  {timer > 0 ? (
-                    <Text style={[styles.timerText, { color: theme.brand }]}>
-                      Resend available in {timer}s
-                    </Text>
-                  ) : (
-                    <TouchableOpacity onPress={handleResendOtp}>
-                      <Text style={[styles.resendLink, { color: theme.brand }]}>
-                        Resend Code
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={[
-                    styles.loginButton,
-                    { backgroundColor: theme.brand, marginTop: 40 },
-                  ]}
-                  onPress={handleVerify}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#FFFFFF" />
-                  ) : (
-                    <Text style={styles.loginButtonText}>Verify Code</Text>
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.backButton}
-                  onPress={() => router.back()}
-                >
-                  <MaterialCommunityIcons name="arrow-left" size={20} color={theme.brand} />
-                  <Text style={[styles.backText, { color: theme.brand }]}>
-                    Change Email
+            <View style={styles.resendContainer}>
+              <Text style={[styles.resendText, { color: theme.secondaryText }]}>
+                Didn't receive a code?{" "}
+              </Text>
+              {timer > 0 ? (
+                <Text style={[styles.timerText, { color: theme.brand }]}>
+                  Resend available in {timer}s
+                </Text>
+              ) : (
+                <TouchableOpacity onPress={handleResendOtp}>
+                  <Text style={[styles.resendLink, { color: theme.brand }]}>
+                    Resend Code
                   </Text>
                 </TouchableOpacity>
-              </View>
-            </>
-          )}
+              )}
+            </View>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={[
+                styles.loginButton,
+                { backgroundColor: theme.brand, marginTop: 40 },
+              ]}
+              onPress={handleVerify}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.loginButtonText}>Verify Code</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <MaterialCommunityIcons name="arrow-left" size={20} color={theme.brand} />
+              <Text style={[styles.backText, { color: theme.brand }]}>
+                Change Email
+              </Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal visible={showSuccess} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: theme.secondaryBackground }]}>
+            <View style={styles.modalIconWrap}>
+              <MaterialCommunityIcons name="check-circle" size={56} color="#4CAF50" />
+            </View>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              Registration Successful
+            </Text>
+            <Text style={[styles.modalSubtitle, { color: theme.secondaryText }]}>
+              Welcome to Task Flow
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -529,30 +489,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-  successContainer: {
-    width: "100%",
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "center",
     alignItems: "center",
-    paddingTop: 40,
   },
-  successTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 30,
+  modalCard: {
+    width: "80%",
+    maxWidth: 320,
+    borderRadius: 24,
+    paddingVertical: 40,
+    paddingHorizontal: 32,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 24,
+    elevation: 12,
   },
-  resultCard: {
-    width: "100%",
-    padding: 20,
-    borderRadius: 16,
+  modalIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(76, 175, 80, 0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
   },
-  resultText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 8,
   },
-  jsonText: {
-    fontSize: 14,
-    fontFamily: Platform.OS === "ios" ? "Courier" : "monospace",
-    lineHeight: 20,
+  modalSubtitle: {
+    fontSize: 15,
+    textAlign: "center",
+    lineHeight: 22,
   },
 });
