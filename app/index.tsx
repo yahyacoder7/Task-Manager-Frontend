@@ -309,14 +309,14 @@ export default function LoginScreen() {
 
 
                 <View style={styles.signupContainer}>
+                  <Text style={[styles.signupText, { color: theme.text }]}>
+                    ليس لديك حساب؟{" "}
+                  </Text>
                   <TouchableOpacity onPress={() => router.push("/register")}>
                     <Text style={[styles.signupLink, { color: theme.brand }]}>
                       أنشئ حساباً جديداً
                     </Text>
                   </TouchableOpacity>
-                  <Text style={[styles.signupText, { color: theme.text }]}>
-                    ليس لديك حساب؟{" "}
-                  </Text>
                 </View>
               </View>
             </>
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     height: 60,
     backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 15,
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingHorizontal: 15,
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.15)',
   },
   inputIcon: {
-    marginLeft: 12,
+    marginRight: 12,
   },
   input: {
     flex: 1,

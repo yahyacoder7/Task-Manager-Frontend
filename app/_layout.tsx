@@ -80,7 +80,7 @@ function NavContent() {
   const { isDark } = useAppTheme();
 
   return (
-    <View style={{ flex: 1, direction: 'rtl' }}>
+    <View style={{ flex: 1 }}>
       <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />

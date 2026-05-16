@@ -408,7 +408,7 @@ export default function TaskDetailsScreen() {
 
 function createStyles(THEME: any) {
   return StyleSheet.create({
-  container: { flex: 1, backgroundColor: THEME.background, direction: 'rtl' as any },
+  container: { flex: 1, backgroundColor: THEME.background },
   centerContainer: { flex: 1, backgroundColor: THEME.background, justifyContent: 'center', alignItems: 'center' },
   scroll: { padding: 16, paddingTop: 16, paddingBottom: 100 },
   

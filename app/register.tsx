@@ -290,14 +290,14 @@ export default function RegisterScreen() {
 
 
             <View style={styles.signupContainer}>
+              <Text style={[styles.signupText, { color: theme.text }]}>
+                لديك حساب بالفعل؟{" "}
+              </Text>
               <TouchableOpacity onPress={() => router.back()}>
                 <Text style={[styles.signupLink, { color: theme.brand }]}>
                   تسجيل الدخول
                 </Text>
               </TouchableOpacity>
-              <Text style={[styles.signupText, { color: theme.text }]}>
-                لديك حساب بالفعل؟{" "}
-              </Text>
             </View>
           </View>
         </ScrollView>
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     height: 60,
     backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 15,
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingHorizontal: 15,
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.15)',
   },
   inputIcon: {
-    marginLeft: 12,
+    marginRight: 12,
   },
   input: {
     flex: 1,

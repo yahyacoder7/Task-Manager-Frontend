@@ -14,9 +14,9 @@ const iconMap: Record<string, string> = {
 };
 
 const TABS = [
-  { name: 'stats', icon: 'ChartBar', label: 'الإحصائيات' },
-  { name: 'plans', icon: 'Calendar', label: 'الخطط' },
   { name: 'index', icon: 'List', label: 'المهام' },
+  { name: 'plans', icon: 'Calendar', label: 'الخطط' },
+  { name: 'stats', icon: 'ChartBar', label: 'الإحصائيات' },
   { name: 'profile', icon: 'User', label: 'الحساب' },
 ];
 
@@ -28,14 +28,14 @@ function HeaderTitle({ title }: { title: string }) {
 function MyTabBar({ state, navigation }: any) {
   const { theme: THEME } = useAppTheme();
   return (
-     <View style={{
-       position: 'absolute', bottom: 0, left: 0, right: 0,
-       backgroundColor: '#E65A2A', borderTopLeftRadius: 24, borderTopRightRadius: 24, height: Platform.OS === 'ios' ? 75 : 65,
-       paddingBottom: Platform.OS === 'ios' ? 20 : 8, paddingTop: 8,
-       flexDirection: 'row', alignItems: 'center',
-       elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-       shadowOpacity: 0.2, shadowRadius: 12,
-     }}>
+      <View style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        backgroundColor: '#E65A2A', borderTopLeftRadius: 24, borderTopRightRadius: 24, height: Platform.OS === 'ios' ? 75 : 65,
+        paddingBottom: Platform.OS === 'ios' ? 20 : 8, paddingTop: 8,
+        flexDirection: 'row-reverse', alignItems: 'center',
+        elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2, shadowRadius: 12,
+      }}>
       {state.routes.map((route: any, i: number) => {
         const focused = state.index === i;
         const tab = TABS.find(t => t.name === route.name);

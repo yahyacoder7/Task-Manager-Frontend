@@ -451,7 +451,7 @@ export default function EditTodoScreen() {
 
 function createStyles(THEME: any) {
   return StyleSheet.create({
-  container: { flex: 1, backgroundColor: THEME.background, direction: 'rtl' as any },
+  container: { flex: 1, backgroundColor: THEME.background },
   hdrRight: { flexDirection: 'row', alignItems: 'center', marginRight: 12, gap: 10 },
   hdrTitle: { color: THEME.white, fontSize: 17, fontFamily: Typography.fonts.bold },
   scroll: { padding: 20 },

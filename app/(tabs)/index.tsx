@@ -328,7 +328,7 @@ export default function TasksScreen() {
 // ── Styles ────────────────────────────────────────────────────────────────────
 function createStyles(THEME: any) {
   return StyleSheet.create({
-  container: { flex: 1, backgroundColor: THEME.background, direction: 'rtl' as any },
+  container: { flex: 1, backgroundColor: THEME.background },
   scroll: { padding: 16, flexGrow: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80, gap: 12 },
 

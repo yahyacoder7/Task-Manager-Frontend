@@ -329,7 +329,7 @@ export default function VerifyOtpScreen() {
                   style={styles.backButton}
                   onPress={() => router.back()}
                 >
-                  <MaterialCommunityIcons name="arrow-left" size={20} color={theme.brand} />
+                  <MaterialCommunityIcons name="arrow-right" size={20} color={theme.brand} />
                   <Text style={[styles.backText, { color: theme.brand }]}>
                     تغيير البريد الإلكتروني
                   </Text>
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   backButton: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 30,
