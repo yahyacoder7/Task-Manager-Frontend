@@ -211,7 +211,7 @@ export default function LoginScreen() {
                     />
                     <TextInput
                       style={[styles.input, { color: theme.text }] as any}
-                      placeholder="اسم_المستخدم@taskflow.dev"
+                      placeholder="example@gmail.com"
                       placeholderTextColor={theme.secondaryText}
                       value={email}
                       onChangeText={setEmail}
@@ -423,9 +423,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 8,
     textAlign: "right",
+    width: '100%',
   },
   inputWrapper: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     borderRadius: 16,
     paddingHorizontal: 16,
@@ -434,12 +435,13 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   inputIcon: {
-    marginLeft: 12,
+    marginRight: 12,
   },
   input: {
     flex: 1,
     fontSize: 16,
     textAlign: "right",
+    writingDirection: "rtl",
     // We handle the outline removal for web with a conditional prop or CSS-in-JS if needed,
     // but for now, we remove it from the standard RN StyleSheet to fix TS error.
     ...Platform.select({
