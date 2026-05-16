@@ -17,10 +17,10 @@ const iconMap: Record<string, string> = {
 };
 
 const TABS = [
-  { name: 'profile', icon: 'User', label: 'Profile' },
-  { name: 'stats', icon: 'ChartBar', label: 'Stats' },
-  { name: 'plans', icon: 'Calendar', label: 'Plans' },
-  { name: 'index', icon: 'List', label: 'Tasks' },
+  { name: 'index', icon: 'List', label: 'B-Village' },
+  { name: 'plans', icon: 'Calendar', label: 'Missions' },
+  { name: 'stats', icon: 'ChartBar', label: 'Action Plans' },
+  { name: 'profile', icon: 'User', label: 'Statistics' },
 ];
 
 function HeaderTitle({ title }: { title: string }) {
@@ -96,10 +96,10 @@ export default function TabLayout() {
           headerLeft: () => null,
           headerShown: true,
         }}>
-        <Tabs.Screen name="profile" options={{ headerLeft: () => <HeaderTitle title="My Profile" /> }} />
-        <Tabs.Screen name="stats" options={{ headerLeft: () => <HeaderTitle title="Statistics" /> }} />
-        <Tabs.Screen name="plans" options={{ headerLeft: () => <HeaderTitle title="Work Plans" /> }} />
-        <Tabs.Screen name="index" options={{ headerLeft: () => <HeaderTitle title="Tasks" /> }} />
+        <Tabs.Screen name="index" options={{ headerLeft: () => <HeaderTitle title="B-Village" /> }} />
+        <Tabs.Screen name="plans" options={{ headerLeft: () => <HeaderTitle title="Missions" /> }} />
+        <Tabs.Screen name="stats" options={{ headerLeft: () => <HeaderTitle title="Action Plans" /> }} />
+        <Tabs.Screen name="profile" options={{ headerLeft: () => <HeaderTitle title="Statistics" /> }} />
       </Tabs>
       <NotificationOverlay />
     </View>
