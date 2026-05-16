@@ -134,8 +134,14 @@ export default function VerifyOtpScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        await saveItem('userToken', data.access_token);
-        await saveItem('userData', JSON.stringify(data.user));
+        console.log("Verify Response:", JSON.stringify(data));
+        
+        if (data.access_token) {
+          await saveItem('userToken', String(data.access_token));
+        }
+        if (data.user) {
+          await saveItem('userData', JSON.stringify(data.user));
+        }
         
         setResult(data);
         console.log("Verify Success:", data);
