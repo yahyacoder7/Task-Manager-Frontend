@@ -12,7 +12,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { BASE_URL } from '../../constants/API';
 
 export default function ProfileScreen() {
-  const { theme: THEME, isDark, toggleTheme, checkAuth } = useAppTheme();
+  const { theme: THEME, isDark, toggleTheme } = useAppTheme();
   const styles = useMemo(() => createStyles(THEME), [THEME]);
   const { notifications, clearNotifications, refreshNotifications } = useNotifications();
   const [user, setUser] = useState<any>(null);
@@ -124,10 +124,7 @@ export default function ProfileScreen() {
       await deleteItem('userToken');
       await deleteItem('userData');
       await deleteItem('userEmail');
-      
-      // The root layout will detect the missing token and
-      // automatically switch to auth-only screens (unmounting tabs)
-      checkAuth();
+      router.replace('/splash?from=logout');
     } catch (err) {
       console.error("Error during logout:", err);
     }

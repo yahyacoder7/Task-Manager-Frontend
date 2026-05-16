@@ -71,22 +71,7 @@ function RootLayoutNav() {
 }
 
 function NavContent() {
-  const { isDark, isAuthenticated } = useAppTheme();
-
-  if (!isAuthenticated) {
-    return (
-      <View style={{ flex: 1, direction: 'ltr' } as any}>
-        <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="splash" options={{ headerShown: false }} />
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="register" options={{ headerShown: false }} />
-            <Stack.Screen name="verify-otp" options={{ headerShown: false }} />
-          </Stack>
-        </ThemeProvider>
-      </View>
-    );
-  }
+  const { isDark } = useAppTheme();
 
   return (
     <View style={{ flex: 1, direction: 'ltr' } as any}>

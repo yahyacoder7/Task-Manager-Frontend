@@ -8,21 +8,16 @@ interface ThemeContextType {
   theme: ThemeColors;
   isDark: boolean;
   toggleTheme: () => Promise<void>;
-  isAuthenticated: boolean;
-  checkAuth: () => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: Colors.dark,
   isDark: true,
   toggleTheme: async () => {},
-  isAuthenticated: true,
-  checkAuth: async () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isDark, setIsDark] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -31,23 +26,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
   const toggleTheme = async () => {
     const next = isDark ? 'light' : 'dark';
     setIsDark(!isDark);
     await saveItem('appTheme', next);
   };
 
-  const checkAuth = async () => {
-    const token = await getItem('userToken');
-    setIsAuthenticated(!!token);
-  };
-
   return (
-    <ThemeContext.Provider value={{ theme: isDark ? Colors.dark : Colors.light, isDark, toggleTheme, isAuthenticated, checkAuth }}>
+    <ThemeContext.Provider value={{ theme: isDark ? Colors.dark : Colors.light, isDark, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

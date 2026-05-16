@@ -1,5 +1,5 @@
 import Colors from "@/constants/Colors";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect } from "react";
 import {
   SafeAreaView,
@@ -13,13 +13,15 @@ import {
 export default function SplashScreen() {
   const router = useRouter();
   const theme = Colors.dark;
+  const { from } = useLocalSearchParams<{ from?: string }>();
 
   useEffect(() => {
+    const delay = from === 'logout' ? 0 : 2000;
     const timer = setTimeout(() => {
-      router.replace("/");
-    }, 2000);
+      router.replace('/');
+    }, delay);
     return () => clearTimeout(timer);
-  }, []);
+  }, [from]);
 
   return (
     <SafeAreaView
