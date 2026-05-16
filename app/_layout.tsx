@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { ThemeProvider as AppThemeProvider, useAppTheme } from '../constants/ThemeContext';
+import { NotificationProvider } from '../contexts/NotificationContext';
 
 import { 
   Rubik_400Regular, 
@@ -61,7 +62,9 @@ function RootLayoutNav() {
   return (
     <GestureHandlerRootView style={{ flex: 1, direction: 'ltr' } as any}>
       <AppThemeProvider>
-        <NavContent />
+        <NotificationProvider>
+          <NavContent />
+        </NotificationProvider>
       </AppThemeProvider>
     </GestureHandlerRootView>
   );

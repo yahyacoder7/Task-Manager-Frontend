@@ -17,6 +17,8 @@ import {
 } from "react-native";
 import { saveItem, getItem } from "../utils/storage";
 import { useEffect } from "react";
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from "react";
 
 import { BASE_URL } from "../constants/API";
 
@@ -35,6 +37,12 @@ export default function LoginScreen() {
   useEffect(() => {
     checkLoginStatus();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      checkLoginStatus();
+    }, [])
+  );
 
   const checkLoginStatus = async () => {
     const token = await getItem('userToken');

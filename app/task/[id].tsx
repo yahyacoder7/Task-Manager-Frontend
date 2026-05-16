@@ -307,8 +307,8 @@ export default function TaskDetailsScreen() {
             <ActivityIndicator color={THEME.white} />
           ) : (
             <>
-              {completed ? <MaterialCommunityIcons name="check-circle" size={22} color={THEME.brand} /> : <MaterialCommunityIcons name="check" size={22} color={THEME.white} />}
-              <Text style={[styles.completeBtnText, completed && { color: THEME.brand }]}>
+              {completed ? <MaterialCommunityIcons name="check-circle" size={22} color={THEME.white} /> : <MaterialCommunityIcons name="check" size={22} color={THEME.white} />}
+              <Text style={[styles.completeBtnText, completed && { color: THEME.white }]}>
                 {completed ? 'Task Completed' : 'Complete Task'}
               </Text>
             </>
@@ -533,8 +533,8 @@ function createStyles(THEME: any) {
     elevation: 6,
   },
   completeBtnDone: {
-    backgroundColor: 'rgba(216,67,21,0.08)',
-    borderWidth: 1.5, borderColor: THEME.brand,
+    backgroundColor: THEME.success,
+    borderWidth: 0,
   },
   completeBtnText: {
     color: THEME.white, fontFamily: Typography.fonts.bold, fontSize: 16,

@@ -9,12 +9,14 @@ import { useCallback, useRef } from 'react';
 import { Typography } from '../../constants/Typography';
 import { useAppTheme } from '../../constants/ThemeContext';
 import { Animated } from 'react-native';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 import { BASE_URL } from '../../constants/API';
 
 export default function ProfileScreen() {
   const { theme: THEME, isDark, toggleTheme } = useAppTheme();
   const styles = useMemo(() => createStyles(THEME), [THEME]);
+  const { notifications, clearNotifications, refreshNotifications } = useNotifications();
   const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState({ completed: 0, incomplete: 0 });
   const [isLoading, setIsLoading] = useState(false);
@@ -106,6 +108,7 @@ export default function ProfileScreen() {
       await deleteItem('userData');
       await deleteItem('userEmail');
       router.replace('/');
+      setTimeout(() => router.navigate('/'), 100);
     } catch (err) {
       console.error("Error during logout:", err);
       router.replace('/');
@@ -116,7 +119,7 @@ export default function ProfileScreen() {
     if (Platform.OS === 'ios' || Platform.OS === 'android') {
       return (
         <View style={[styles.glassCardContainer, style]}>
-          <BlurView intensity={20} tint="dark" style={styles.blurView}>
+          <BlurView intensity={isDark ? 20 : 80} tint={isDark ? "dark" : "light"} style={styles.blurView}>
             {children}
           </BlurView>
         </View>
@@ -200,6 +203,31 @@ export default function ProfileScreen() {
               <MaterialCommunityIcons name="chevron-right" size={20} color={THEME.secondaryText} />
             </TouchableOpacity>
           </View>
+
+          {notifications.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitle}>Notifications</Text>
+                <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                  <TouchableOpacity onPress={refreshNotifications}>
+                    <MaterialCommunityIcons name="refresh" size={18} color={THEME.brand} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={clearNotifications}>
+                    <Text style={styles.clearText}>Clear All</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {notifications.slice(0, 5).map((n) => (
+                <View key={n.id} style={styles.notifCard}>
+                  <MaterialCommunityIcons name="bell-outline" size={18} color={THEME.brand} style={styles.notifIcon} />
+                  <View style={styles.notifContent}>
+                    <Text style={styles.notifTitle}>{n.title}</Text>
+                    <Text style={styles.notifMessage}>{n.message}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Quick Overview</Text>
@@ -308,6 +336,11 @@ function createStyles(THEME: any) {
     borderWidth: 1,
     borderColor: THEME.divider,
     padding: 20,
+    shadowColor: THEME.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   blurView: {
     padding: 20,
@@ -363,6 +396,48 @@ function createStyles(THEME: any) {
     marginBottom: 16,
     textAlign: 'left',
     fontFamily: Typography.fonts.bold,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  clearText: {
+    fontSize: 13,
+    color: THEME.brand,
+    fontFamily: Typography.fonts.medium,
+  },
+  notifCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: THEME.card,
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: THEME.divider,
+    gap: 12,
+  },
+  notifIcon: {
+    marginTop: 2,
+    flexShrink: 0,
+  },
+  notifContent: {
+    flex: 1,
+    gap: 4,
+  },
+  notifTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: THEME.text,
+    fontFamily: Typography.fonts.bold,
+  },
+  notifMessage: {
+    fontSize: 12,
+    color: THEME.secondaryText,
+    fontFamily: Typography.fonts.regular,
+    lineHeight: 18,
   },
   actionButton: {
     flexDirection: 'row',
