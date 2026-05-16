@@ -304,53 +304,19 @@ export default function LoginScreen() {
                   )}
                 </TouchableOpacity>
 
-                <View style={styles.dividerContainer}>
-                  <View
-                    style={[
-                      styles.divider,
-                      {
-                        backgroundColor: theme.secondaryBackground,
-                        opacity: 0.3,
-                      },
-                    ]}
-                  />
-                  <Text
-                    style={[styles.dividerText, { color: theme.secondaryText }]}
-                  >
-                    أو تسجيل الدخول باستخدام:
-                  </Text>
-                  <View
-                    style={[
-                      styles.divider,
-                      {
-                        backgroundColor: theme.secondaryBackground,
-                        opacity: 0.3,
-                      },
-                    ]}
-                  />
-                </View>
 
-                <View style={styles.socialButtons}>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    style={[
-                      styles.socialButton,
-                      { backgroundColor: theme.secondaryBackground },
-                    ]}
-                  >
-                    <MaterialCommunityIcons name="google" size={22} color="#EA4335" />
-                  </TouchableOpacity>
-                </View>
+
+
 
                 <View style={styles.signupContainer}>
-                  <Text style={[styles.signupText, { color: theme.text }]}>
-                    ليس لديك حساب؟{" "}
-                  </Text>
                   <TouchableOpacity onPress={() => router.push("/register")}>
                     <Text style={[styles.signupLink, { color: theme.brand }]}>
                       أنشئ حساباً جديداً
                     </Text>
                   </TouchableOpacity>
+                  <Text style={[styles.signupText, { color: theme.text }]}>
+                    ليس لديك حساب؟{" "}
+                  </Text>
                 </View>
               </View>
             </>
@@ -417,27 +383,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   inputGroup: {
-    marginBottom: 18,
-    alignItems: 'flex-end',
     width: '100%',
+    marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 8,
+    fontSize: 15,
+    fontWeight: "bold",
+    marginBottom: 10,
     textAlign: "right",
-    width: '100%',
     alignSelf: 'flex-end',
+    paddingRight: 4,
+    color: '#D84315', // لون برتقالي لتمييز العنوان
   },
   inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 58,
-    borderWidth: 1.5,
-    borderColor: "transparent",
     width: '100%',
+    height: 60,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
   },
   inputIcon: {
     marginLeft: 12,
@@ -488,40 +456,14 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "700",
   },
-  dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    paddingHorizontal: 16,
-    fontSize: 14,
-    opacity: 0.6,
-  },
-  socialButtons: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 20,
-    marginBottom: 40,
-  },
-  socialButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: 'rgba(255,255,255,0.05)',
-  },
+
   signupContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     width: '100%',
     marginTop: 10,
+    gap: 10,
   },
   signupText: {
     fontSize: 15,
