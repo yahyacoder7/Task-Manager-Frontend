@@ -32,10 +32,9 @@ export default function VerifyOtpScreen() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [timer, setTimer] = useState(60);
   const [result, setResult] = useState<any>(null);
-  const [isFocused, setIsFocused] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(0);
 
-  const inputRef = useRef<TextInput | null>(null);
-  const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRefs = useRef<(TextInput | null)[]>([]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -48,40 +47,64 @@ export default function VerifyOtpScreen() {
   }, [timer]);
 
   useEffect(() => {
-    focusTimerRef.current = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 400);
-    return () => {
-      if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
-    };
+    const t = setTimeout(() => {
+      inputRefs.current[0]?.focus();
+    }, 600);
+    return () => clearTimeout(t);
   }, []);
 
-  const handleFocusInput = () => {
-    if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
-    focusTimerRef.current = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
+  const focusInput = (index: number) => {
+    setFocusedIndex(index);
+    setTimeout(() => {
+      inputRefs.current[index]?.focus();
+    }, 50);
   };
 
-  const handleChange = (value: string) => {
+  const handleChange = (value: string, index: number) => {
     setError(null);
 
-    const digits = value.replace(/[^0-9]/g, "").split("").slice(0, OTP_LENGTH);
+    if (value.length > 1) {
+      const pasted = value.replace(/[^0-9]/g, "").split("").slice(0, OTP_LENGTH);
+      const newOtp = Array(OTP_LENGTH).fill("");
+      pasted.forEach((d, i) => {
+        if (i < OTP_LENGTH) newOtp[i] = d;
+      });
+      setOtp(newOtp);
+      const nextIdx = Math.min(pasted.length, OTP_LENGTH - 1);
+      setFocusedIndex(nextIdx);
+      setTimeout(() => {
+        inputRefs.current[nextIdx]?.focus();
+      }, 50);
+      return;
+    }
 
-    const newOtp = Array(OTP_LENGTH).fill("");
-    digits.forEach((d, i) => {
-      if (i < OTP_LENGTH) newOtp[i] = d;
-    });
+    if (value === "") return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
     setOtp(newOtp);
+
+    if (index < OTP_LENGTH - 1) {
+      setFocusedIndex(index + 1);
+      setTimeout(() => {
+        inputRefs.current[index + 1]?.focus();
+      }, 50);
+    }
   };
 
-  const handleKeyPress = (e: any) => {
+  const handleKeyPress = (e: any, index: number) => {
     if (e.nativeEvent.key === "Backspace") {
-      const filledCount = otp.filter((d) => d !== "").length;
-      if (filledCount > 0) {
-        const newOtp = [...otp];
-        newOtp[filledCount - 1] = "";
+      const newOtp = [...otp];
+      if (newOtp[index] !== "") {
+        newOtp[index] = "";
         setOtp(newOtp);
+      } else if (index > 0) {
+        newOtp[index - 1] = "";
+        setOtp(newOtp);
+        setFocusedIndex(index - 1);
+        setTimeout(() => {
+          inputRefs.current[index - 1]?.focus();
+        }, 50);
       }
     }
   };
@@ -134,6 +157,7 @@ export default function VerifyOtpScreen() {
     setIsLoading(true);
     setError(null);
     setOtp(Array(OTP_LENGTH).fill(""));
+    setFocusedIndex(0);
     try {
       const response = await fetch(`${BASE_URL}/auth/resend-otp`, {
         method: "POST",
@@ -147,6 +171,9 @@ export default function VerifyOtpScreen() {
         setTimer(60);
         setSuccessMessage("Code resent to your email successfully");
         setTimeout(() => setSuccessMessage(null), 3000);
+        setTimeout(() => {
+          inputRefs.current[0]?.focus();
+        }, 300);
       } else {
         setError("Failed to resend code. Please try again later.");
       }
@@ -169,7 +196,7 @@ export default function VerifyOtpScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
         >
           {result ? (
             <View style={styles.successContainer}>
@@ -269,58 +296,48 @@ export default function VerifyOtpScreen() {
                   </View>
                 )}
 
-                <TouchableOpacity
-                  style={styles.otpContainer}
-                  onPress={handleFocusInput}
-                  activeOpacity={1}
-                >
+                <View style={styles.otpContainer}>
                   {otp.map((digit, index) => {
                     const isFilled = digit !== "";
-                    const isEmptySpot = !isFilled && index === otp.filter((d) => d !== "").length;
+                    const isActive = index === focusedIndex;
                     return (
-                      <View
+                      <TouchableOpacity
                         key={index}
-                        style={[
-                          styles.otpBox,
-                          {
-                            backgroundColor: isEmptySpot && isFocused
-                              ? "rgba(216, 67, 21, 0.1)"
-                              : theme.secondaryBackground,
-                            borderColor: isFilled
-                              ? theme.brand
-                              : isEmptySpot && isFocused
-                              ? theme.brand
-                              : "rgba(255,255,255,0.15)",
-                            borderWidth: 2,
-                          },
-                        ]}
+                        style={styles.otpTouch}
+                        activeOpacity={1}
+                        onPress={() => focusInput(index)}
                       >
-                        <Text style={[styles.otpDigit, { color: theme.text }]}>
-                          {digit}
-                        </Text>
-                        {isEmptySpot && isFocused && (
-                          <View style={styles.cursor} />
-                        )}
-                      </View>
+                        <TextInput
+                          ref={(ref) => {
+                            inputRefs.current[index] = ref;
+                          }}
+                          style={[
+                            styles.otpBox,
+                            {
+                              backgroundColor: isActive
+                                ? "rgba(216, 67, 21, 0.1)"
+                                : theme.secondaryBackground,
+                              borderColor: isFilled
+                                ? theme.brand
+                                : isActive
+                                ? theme.brand
+                                : "rgba(255,255,255,0.15)",
+                              borderWidth: 2,
+                            },
+                          ]}
+                          maxLength={1}
+                          keyboardType="numeric"
+                          value={digit}
+                          onChangeText={(val) => handleChange(val, index)}
+                          onKeyPress={(e) => handleKeyPress(e, index)}
+                          onFocus={() => setFocusedIndex(index)}
+                          textAlign="center"
+                          editable
+                        />
+                      </TouchableOpacity>
                     );
                   })}
-                </TouchableOpacity>
-
-                <TextInput
-                  ref={inputRef}
-                  style={styles.hiddenInput}
-                  value={otp.join("")}
-                  onChangeText={handleChange}
-                  onKeyPress={handleKeyPress}
-                  keyboardType="number-pad"
-                  maxLength={OTP_LENGTH}
-                  caretHidden
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  autoComplete="sms-otp"
-                  textContentType="oneTimeCode"
-                  importantForAutofill="no"
-                />
+                </View>
 
                 <View style={styles.resendContainer}>
                   <Text style={[styles.resendText, { color: theme.secondaryText }]}>
@@ -431,29 +448,22 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     gap: 10,
   },
+  otpTouch: {
+    width: 48,
+    height: 58,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
   otpBox: {
     width: 48,
     height: 58,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-  },
-  otpDigit: {
     fontSize: 22,
     fontWeight: "bold",
-  },
-  cursor: {
-    position: "absolute",
-    left: 14,
-    width: 2,
-    height: 24,
-    backgroundColor: "#D84315",
-  },
-  hiddenInput: {
-    position: "absolute",
-    width: 1,
-    height: 1,
-    opacity: 0,
+    textAlign: "center",
+    padding: 0,
   },
   errorContainer: {
     backgroundColor: "rgba(234, 67, 53, 0.1)",

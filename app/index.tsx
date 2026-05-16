@@ -336,11 +336,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    ...Platform.select({
-      web: {
-        outlineStyle: "none",
-      },
-    }),
   },
   eyeIcon: {
     padding: 4,
