@@ -102,17 +102,32 @@ export default function ProfileScreen() {
     router.push('/edit-profile');
   };
 
-  const handleLogout = async () => {
-    try {
-      await deleteItem('userToken');
-      await deleteItem('userData');
-      await deleteItem('userEmail');
-      router.replace('/');
-      setTimeout(() => router.navigate('/'), 100);
-    } catch (err) {
-      console.error("Error during logout:", err);
-      router.replace('/');
-    }
+  const handleLogout = () => {
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "OK", onPress: async () => {
+          try {
+            await deleteItem('userToken');
+            await deleteItem('userData');
+            await deleteItem('userEmail');
+            
+            // محاولة تفريغ الشاشات المتكدسة إن وجدت للتأكد من الخروج من الـ Tabs
+            if (router.canDismiss()) {
+              router.dismissAll();
+            }
+            
+            // التوجيه إلى الشاشة الرئيسية (تسجيل الدخول)
+            router.replace('/');
+          } catch (err) {
+            console.error("Error during logout:", err);
+            router.replace('/');
+          }
+        }}
+      ]
+    );
   };
 
   const GlassCard = ({ children, style }: any) => {
