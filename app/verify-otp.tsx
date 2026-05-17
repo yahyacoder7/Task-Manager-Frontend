@@ -17,6 +17,7 @@ import {
   View,
   Image,
 } from "react-native";
+import { saveItem } from "../utils/storage";
 import { BASE_URL } from '../constants/API';
 
 const OTP_LENGTH = 6;
@@ -134,24 +135,36 @@ export default function VerifyOtpScreen() {
     setError(null);
 
     try {
+      const emailString = Array.isArray(email) ? email[0] : email;
+
       const response = await fetch(`${BASE_URL}/auth/verify-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email,
-          otp: otpString,
+          email: emailString,
+          otp: Number(otpString),
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // حفظ التوكن والبيانات في الجهاز بأمان
+        if (data.access_token) {
+          await saveItem('userToken', data.access_token);
+        }
+        if (data.user) {
+          await saveItem('userData', JSON.stringify(data.user));
+          await saveItem('userEmail', data.user.email);
+        }
+        
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
-          router.replace("/");
+          // التوجيه إلى داخل التطبيق مباشرة
+          router.replace("/(tabs)");
         }, 2000);
       } else {
         setError(data.message || "Invalid or expired verification code.");
@@ -272,6 +285,7 @@ export default function VerifyOtpScreen() {
                       style={[
                         styles.otpBox,
                         {
+                          color: theme.text,
                           backgroundColor: isActive
                             ? "rgba(216, 67, 21, 0.1)"
                             : theme.secondaryBackground,
